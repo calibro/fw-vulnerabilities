@@ -1,0 +1,56 @@
+{
+  "name": "fw-vulnerabilities",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Visualize data related to vulnerabilities",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "dev": "NODE_ENV=DEV vue-cli-service serve & sleep 5 && NODE_ENV=DEV electron app.js",
+    "electron-dev": "vue-cli-service build && electron app.js",
+    "electron:build": "vue-cli-service electron:build -wml",
+    "electron:serve": "vue-cli-service electron:serve",
+    "gh-pages": "vue-cli-service gh-pages",
+    "postinstall": "electron-builder install-app-deps",
+    "postuninstall": "electron-builder install-app-deps"
+  },
+  "main": "background.js",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "bootstrap": "^4.4.1",
+    "bootstrap-vue": "^2.8.0",
+    "core-js": "^2.6.5",
+    "d3": "^5.15.0",
+    "d3-array": "^2.4.0",
+    "d3-scale": "^3.2.1",
+    "d3-svg-legend": "^2.25.6",
+    "save-as": "^0.1.8",
+    "save-svg-as-png": "^1.4.17",
+    "tippy.js": "^6.0.3",
+    "underscore": "^1.9.2",
+    "vue": "^2.6.11",
+    "vue-click-outside": "^1.0.7",
+    "vue-resize-directive": "^1.2.0",
+    "vuex": "^3.0.1"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.12.0",
+    "@vue/cli-service": "^3.12.0",
+    "electron": "^8.0.2",
+    "stylus": "^0.54.5",
+    "stylus-loader": "^3.0.2",
+    "vue-cli-plugin-electron-builder": "^2.0.0-beta.5",
+    "vue-cli-plugin-gh-pages": "~1.0.0",
+    "vue-svg-loader": "^0.16.0",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ]
+}
