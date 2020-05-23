@@ -39,7 +39,7 @@ export default {
       groupOptions: [
         { value: "State", text: "State" },
         { value: "Close Code", text: "Close code" },
-        { value: "Team aziendale", text: "Team aziendale" }
+        { value: "Team Aziendale", text: "Team Aziendale" }
       ],
       colorOptions: [
         { value: "Priority", text: "Priority" },

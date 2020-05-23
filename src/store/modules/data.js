@@ -58,9 +58,9 @@ export default {
     filterOptions: {}
   },
   getters: {
-    filtredData: state => {
+    filteredData: state => {
       // TODO: Filter!
-      return csvData
+      return state.csvData
     }
   },
   mutations: {

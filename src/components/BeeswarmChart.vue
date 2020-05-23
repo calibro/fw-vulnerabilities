@@ -16,10 +16,9 @@ import d3Legend from "d3-svg-legend";
 import { mapState, mapGetters, mapMutations } from "vuex";
 import tippy from "tippy.js";
 import Vue from "vue";
-import ChartTooltip from "./commons/ChartTooltip";
 
 export default {
-  name: "CirclePackChart",
+  name: "BeeswarmChart",
   props: ["x", "y", "height", "width"],
   computed: {
     ...mapState({
@@ -29,7 +28,6 @@ export default {
     }),
     ...mapGetters({
       filteredData: "data/filteredData",
-      hierarchyData: "data/filteredHierarchy"
     })
   },
   mounted() {
@@ -39,27 +37,34 @@ export default {
     init() {
       let csvData = this.csvData;
 
-      let reputationScale = d3
+      let priorityScale = d3
         .scaleOrdinal()
-        .domain(["Poor", "Neutral", "Good"])
+        .domain(new Set(csvData.map(e => e["Priority"])))
         .range(["#D4003D", "#EAEA6A", "#00E4A2"]);
 
-      let blacklistScale = d3
-        .scaleLinear()
-        .domain([0, 1, 3])
+      let ageScale = d3
+        .scaleOrdinal()
+        .domain(new Set(csvData.map(e => e["Age"])))
         .range(["rgb(221,221,221)", "rgb(253, 137, 60)", "rgb(128, 0, 38)"]);
 
+      let esposizioneScale = d3
+        .scaleOrdinal()
+        .domain(new Set(csvData.map(e => e["Fattore di Esposizione"])))
+        .range(["rgb(221,221,221)", "rgb(253, 137, 60)", "rgb(128, 0, 38)"]);
+
+
       this.colorScales = {
-        email_score_name: reputationScale,
-        blacklists_count: blacklistScale
+        "Priority": priorityScale,
+        "Age": ageScale,
+        "Fattore di Esposizione": esposizioneScale
       };
 
-      this.legendLabels = {
+      /*this.legendLabels = {
         lastmonth: "last month volume",
         lastday: "last day volume",
         email_score_name: "reputation",
         blacklists_count: "blacklist count"
-      };
+      };*/
 
       this.initialized = true;
     },
@@ -69,15 +74,13 @@ export default {
       let self = this;
       let vHeight = this.height;
       let vWidth = this.width;
-      let rad = Math.min(vWidth, vHeight);
-      let rooted = false; // show or hide broader circle
 
       const svg = d3
         .select(this.$refs.mainChart)
         .attr("width", vWidth)
         .attr("height", vHeight);
 
-      if (this.hierarchyData.length == 0) {
+      if (this.filteredData.length == 0) {
         svg.selectAll("*").remove();
         d3.select(this.$refs.legend)
           .selectAll("*")
@@ -92,436 +95,148 @@ export default {
         this.scaleToFit(0, 0, this.width, this.height);
       } else {
         svg.selectAll(".no-data-text").remove();
-
-        const circle = d3
-          .arc()
-          .innerRadius(0)
-          .outerRadius(d => d)
-          .startAngle(-Math.PI)
-          .endAngle(Math.PI);
-
-        const hierarchy = d3.hierarchy(
-          { children: this.hierarchyData },
-          d => d.children
-        );
-
-        // Define range base on useOriginaValue or not
-        const lastmonthExtent = d3.extent(
-          hierarchy.leaves(),
-          d => d.data.lastmonth
-        );
-        const sizeScaleLastmonth = d3
-          .scaleLinear()
-          .domain(lastmonthExtent)
-          .range(
-            this.useOriginalValues ? [0.1, lastmonthExtent[1]] : [1.0, 100.0]
-          );
-
-        const lastdayExtent = d3.extent(
-          hierarchy.leaves(),
-          d => d.data.lastday
-        );
-        const sizeScaleLastday = d3
-          .scaleLinear()
-          .domain(lastdayExtent)
-          .range(
-            this.useOriginalValues ? [0.1, lastdayExtent[1]] : [1.0, 100.0]
-          );
-
-        const sizeScales = {
-          lastday: sizeScaleLastday,
-          lastmonth: sizeScaleLastmonth
+        
+        //TODO implement transitions
+        svg.selectAll("*").remove();
+        
+        // Define margins
+        var margin = {
+            top: 5,
+            right: 25,
+            bottom: 0,
+            left: 25
         };
 
-        const root = d3
-          .pack()
-          .size([vWidth, vHeight])
-          .padding(10)(
-          hierarchy
-            .sum(d => {
-              return sizeScales[self.areaBy](d[self.areaBy]);
+        //define title space
+        var titleSpace = 30;
+  
+        var groups = d3.nest()
+            .key(d => d[this.groupBy])
+            .entries(this.filteredData)
+
+        // define single beswarm plot height, depending on the number of bar charts
+        var w = +vWidth - margin.left - margin.right,
+            h = (+vHeight - margin.bottom - margin.top - ((titleSpace) * (groups.length - 1))) / groups.length;
+
+        var xScale = d3.scaleLinear()
+
+        let xMax = d3.max(groups, function(d) {
+            return d3.max(d.values, function(e) {
+                return e['CVSS Score'];
             })
-            .sort((a, b) => {
-              return b.value - a.value;
+        })
+        let xMin = d3.min(groups, function(d) {
+            return d3.min(d.values, function(e) {
+                return e['CVSS Score'];
             })
-        );
+        })
+        // if (values.type() == 'Date') {
+        //     xMin = new Date(xMin);
+        //     xMax = new Date(xMax)
+        // }
 
-        const minX = d3.min(
-          root.descendants().slice(rooted ? 0 : 1),
-          d => d.x - d.r
-        );
-        const maxX = d3.max(
-          root.descendants().slice(rooted ? 0 : 1),
-          d => d.x + d.r
-        );
-        const minY = d3.min(
-          root.descendants().slice(rooted ? 0 : 1),
-          d => d.y - d.r
-        );
-        const maxY = d3.max(
-          root.descendants().slice(rooted ? 0 : 1),
-          d => d.y + d.r
-        );
+        xScale.range([10, w - 10])
+            .domain([xMin, xMax]);
 
-        const textScale = d3
-          .scaleLinear()
-          .range([7, 14])
-          .domain(
-            d3.extent(
-              root
-                .descendants()
-                .slice(rooted ? 0 : 1)
-                .filter(d => d.children && d.children.length > 1),
-              d => d.r
-            )
-          );
+        // Spatialization iterations
+        var anticollisionIterations = 1
+        var marginCircles = 0.5
+        // Space between barcharts
+        var padding = 10
+        var minRadius = 2
+        var maxRadius = 20
+        var radius = 5
 
-        let node = svg.selectAll(".node-g").data(
-          root
-            .descendants()
-            .slice(rooted ? 0 : 1)
-            .reverse(),
-          d => d.data.level + d.data.name + (d.data.ip ? d.data.ip : "group")
-        );
+        groups.forEach((item, index) => {
 
-        let nodeEnter = node
-          .enter()
-          .append("g")
-          .attr("class", "node-g")
-          .attr("opacity", 0)
-          .attr(
-            "transform",
-            d => `translate(${this.width / 2},${this.height / 2})`
-          );
+        let beeswarm = svg.append("g")
+            .attr('id', item.key === "undefined" ? "swarm" : "swarm-" + item.key)
+            .attr("transform", "translate(" + margin.left + "," + index * (h + titleSpace) + ")");
 
-        nodeEnter
-          .append("path")
-          .attr("class", "node-path")
-          .attr("id", (d, i) => {
-            if (d.children && d.children.length > 1) {
-              const id =
-                "p_" +
-                (d.children ? d.children.length : 0) +
-                d.depth +
-                d.data.level +
-                d.data.name +
-                (d.data.ip ? d.data.ip : "group");
-              return id;
-            }
-          })
-          .filter(d => !d.children)
-          .on("mouseover", function(d) {
-            tippy(this, {
-              content:
-                "<div><strong>" +
-                (d.data.hostname ? d.data.hostname : d.data.ip) +
-                "</strong></div>" +
-                "<div>Last day: " +
-                parseFloat(d.data.lastday).toFixed(2) +
-                "</div>" +
-                "<div>Last month: " +
-                parseFloat(d.data.lastmonth).toFixed(2) +
-                "</div>" +
-                "<div>Reputation: " +
-                d.data.email_score_name +
-                "</div>" +
-                "<div>Blacklists count: " +
-                d.data.blacklists_count +
-                (d.data.blacklists_count
-                  ? " <br> - " +
-                    d.data.blacklists_sources.split(" | ").join("<br> - ")
-                  : "") +
-                "</div>",
-              allowHTML: true
-            });
-            d3.select(this).attr("stroke", "#222");
-          })
-          .on("mouseout", function(d) {
-            !d3.select(this).classed("has-label") &&
-              d3.select(this).attr("stroke", "none");
-            //this._tippy && this._tippy.destroy()
-          })
-          .on("click", function(d) {
-            let parent = d3.select(this.parentNode);
-            if (parent.selectAll(".node-label").size() > 0) {
-              d3.select(this)
-                .attr("stroke", "none")
-                .classed("has-label", false);
-              parent.selectAll(".node-label").remove();
-            } else {
-              d3.select(this)
-                .attr("stroke", "black")
-                .classed("has-label", true);
-              parent
-                .append("text")
-                .attr("fill", "black")
-                .attr("class", "node-label")
-                .attr("font-size", "12px")
-                .attr("text-anchor", "middle")
-                .attr("dy", 4)
-                .attr("font-family", "'Arial', sans-serif")
-                .attr("paint-order", "stroke")
-                .attr("stroke", "#fff")
-                .attr("stroke-width", "2px")
-                .attr("stroke-linecap", "round")
-                .attr("stroke-linejoin", "miter")
-                .text(d.data.hostname ? d.data.hostname : d.data.ip);
-              parent.raise();
-            }
-          });
+        // Draw title
+        beeswarm.append("text")
+            .attr("x", -margin.left)
+            .attr("y", titleSpace - 7)
+            .style("font-size", "10px")
+            .style("font-family", "Arial, Helvetica")
+            .text(item.key);
 
-        node.exit().remove();
+        let data = item.values;
 
-        node = node.merge(nodeEnter);
-
-        node
-          .transition()
-          .duration(500)
-          .attr("opacity", 1)
-          .attr("transform", d => `translate(${d.x + 1},${d.y + 1})`);
-
-        node
-          .select(".node-path")
-          .attr("d", d => circle(d.r))
-          .attr("stroke", function(d) {
-            if (d.children && d.children.length > 1) {
-              return "#ddd";
-            } else if (d3.select(this).classed("has-label")) {
-              return "black";
-            } else {
-              return "none";
-            }
-          })
-          .transition()
-          .duration(500)
-          .attr("fill", d => {
-            if (d.children && d.children.length >= 1) {
-              return "none";
-            } else {
-              return this.colorScales[self.colorBy](d.data[self.colorBy]);
-            }
-          });
-
-        // LABELS
-        let nodeLabels = svg
-          .selectAll(".node-labels")
-          .data(
-            root
-              .descendants()
-              .slice(rooted ? 0 : 1)
-              .reverse()
-              .filter(d => d.children && d.children.length > 1),
-            d => d.data.level + d.data.name + (d.data.ip ? d.data.ip : "group")
-          )
-          .join(
-            enter => {
-              const selection = enter
-                .append("text")
-                .attr("font-size", d => textScale(d.r) + "px")
-                .attr(
-                  "transform",
-                  `translate(${this.width / 2},${this.height / 2})`
-                );
-
-              selection
-                .append("textPath")
-                .attr("href", (d, i) => {
-                  const id =
-                    "p_" +
-                    (d.children ? d.children.length : 0) +
-                    d.depth +
-                    d.data.level +
-                    d.data.name +
-                    (d.data.ip ? d.data.ip : "group");
-                  return "#" + id;
+        var simulation = d3.forceSimulation(data)
+            .force("x",
+                d3.forceX(function(d) {
+                    return xScale(d['CVSS Score'])
                 })
-                .attr("startOffset", "50%")
-                .text(d => {
-                  return d.data.name;
-                });
+                .strength(1)
+            )
+            .force("y", d3.forceY(h / 2))
+            .force("collide", d3.forceCollide(function(d) {
+                //return radius(d.radius) + marginCircles()
+                return radius + marginCircles
+            }).iterations(anticollisionIterations))
+            .stop()
 
-              selection.call(enter =>
-                enter
-                  .transition()
-                  .duration(500)
-                  .attr("transform", d => `translate(${d.x + 1},${d.y + 1})`)
-              );
+        for (var i = 0; i < 240; ++i) simulation.tick();
 
-              return selection;
-            },
-            update =>
-              update
-                .attr("font-size", d => textScale(d.r) + "px")
-                .call(update =>
-                  update
-                    .transition()
-                    .duration(500)
-                    .attr("transform", d => `translate(${d.x + 1},${d.y + 1})`)
-                )
-          )
-          .attr("class", "node-labels")
-          .attr("dy", "-0.3em")
-          .attr("fill", "black")
-          .attr("text-anchor", "middle")
-          .attr("font-family", "'Arial', sans-serif");
+        let bees = beeswarm.append('g')
+            .attr('id', 'circles')
+            .attr('class', 'bees')
+            .selectAll("circle")
+            .data(data).enter()
+            .append('circle')
+            .attr('id', function(d) {
+                return d['Code']
+            })
+            .attr('r', function(d) {
+                //return radius(d.radius)
+                return radius
+            })
+            .attr('cx', function(d) {
+                return d.x
+            })
+            .attr('cy', function(d) {
+                return d.y
+            })
+            .attr("fill", function(d) {
+              return self.colorScales[self.colorBy](d[self.colorBy])
+            });
 
-        // nodeLabels
-        //   .selectAll("textPath")
-        //   .data(d => [d])
-        //   .join("textPath")
-        //   .attr("href", (d, i) => {
-        //     console.log(d);
-        //     const id =
-        //       "p_" +
-        //       (d.children ? d.children.length : 0) +
-        //       d.depth +
-        //       d.data.level +
-        //       d.data.name +
-        //       (d.data.ip ? d.data.ip : "group");
-        //     return "#" + id;
-        //   })
-        //   .attr("startOffset", "50%")
-        //   .text(d => {
-        //     return d.data.name;
-        //   });
-
-        const legendColorCont = d3
-          .select(this.$refs.legend)
-          .select(".legendColor");
-
-        const legendOrdinal = d3Legend
-          .legendColor()
-          .shapePadding(10)
-          .title(self.legendLabels[self.colorBy])
-          .scale(self.colorScales[self.colorBy]);
-
-        if (self.colorBy === "blacklists_count") {
-          legendOrdinal
-            .cells(self.colorScales[self.colorBy].domain())
-            .labelFormat(d3.format(".0f"));
-        }
-
-        if (legendColorCont.empty()) {
-          d3.select(this.$refs.legend)
-            .append("g")
-            .attr("class", "legendColor");
-
-          d3.select(this.$refs.legend)
-            .select(".legendColor")
-            .call(legendOrdinal);
-
-          d3.select(this.$refs.legend)
-            .select(".legendColor")
+        let labels = beeswarm.append('g')
+            .attr('id', 'labels')
+            .attr('class', 'label')
             .selectAll("text")
-            .attr("font-family", "'Arial', sans-serif");
-        } else {
-          legendColorCont.call(legendOrdinal);
-          legendColorCont
-            .selectAll("text")
-            .attr("font-family", "'Arial', sans-serif");
-        }
+            .data(data).enter()
+            .append('text')
+            .attr('x', function(d) {
+                return d.x
+            })
+            .attr('y', function(d) {
+                return d.y
+            })
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#000')
+            .text(function(d) {
+                if (d.label) return d.label;
+            })
+        })
 
-        //size legends
+        // After all the charts, draw x axis
+        svg.append("g")
+            .attr('id', '"x-axis')
+            .attr("class", "x axis")
+            .style("font-size", "10px")
+            .style("font-family", "Arial, Helvetica")
+            .attr("transform", "translate(" + margin.left + "," + (0) + ")")
+            .call(d3.axisBottom(xScale));
 
-        const sizeLegendDomain = d3.extent(hierarchy.leaves(), d => d.r);
-        const sizeLegendRange = d3.extent(
-          hierarchy.leaves(),
-          d => d.data[self.areaBy]
-        );
+        // Set styles
+        d3.selectAll(".axis line, .axis path")
+            .style("shape-rendering", "crispEdges")
+            .style("fill", "none")
+            .style("stroke", "#ccc");
 
-        const sizeLegendScale = d3
-          .scaleLinear()
-          .domain(sizeLegendDomain)
-          .range(sizeLegendRange);
-
-        const sizeLegendCircles = [5, 20, 40];
-
-        const sizeLegendCirclesData = sizeLegendCircles.map(d => {
-          return { r: d, label: sizeLegendScale(d) };
-        });
-
-        if (
-          d3
-            .select(this.$refs.legend)
-            .select(".legendSize")
-            .empty()
-        ) {
-          d3.select(this.$refs.legend)
-            .append("g")
-            .attr("class", "legendSize")
-            .attr("transform", "translate(150,0)")
-            .append("text")
-            .attr("class", "legendTitle")
-            .text(self.legendLabels[self.areaBy])
-            .attr("font-family", "'Arial', sans-serif");
-        }
-
-        d3.select(this.$refs.legend)
-          .select(".legendSize")
-          .select(".legendTitle")
-          .text(self.legendLabels[self.areaBy]);
-
-        const legendSizeCont = d3
-          .select(this.$refs.legend)
-          .select(".legendSize");
-
-        const nodeLegend = legendSizeCont
-          .selectAll("g")
-          .data(sizeLegendCirclesData)
-          .join("g")
-          .attr("transform", "translate(0," + 19 + ")");
-
-        nodeLegend
-          .selectAll("circle")
-          .data(d => [d])
-          .join("circle")
-          .attr("fill", "none")
-          .attr("stroke", "#ccc")
-          .attr("cx", d3.max(sizeLegendCircles))
-          .attr("r", d => d.r)
-          .attr("cy", d => d3.max(sizeLegendCircles) * 2 - d.r);
-
-        nodeLegend
-          .selectAll("line")
-          .data(d => [d])
-          .join("line")
-          .attr("stroke", "#ccc")
-          .attr("stroke-dasharray", "3 3")
-          .attr("x1", d3.max(sizeLegendCircles))
-          .attr("y1", d => d3.max(sizeLegendCircles) * 2 - d.r * 2)
-          .attr("x2", d3.max(sizeLegendCircles) * 2 + 8)
-          .attr("y2", d => d3.max(sizeLegendCircles) * 2 - d.r * 2);
-
-        nodeLegend
-          .selectAll("text")
-          .data(d => [d])
-          .join("text")
-          .attr("font-family", "'Arial', sans-serif")
-          .attr("dy", 6)
-          .attr("x", d3.max(sizeLegendCircles) * 2 + 12)
-          .attr("y", d => d3.max(sizeLegendCircles) * 2 - d.r * 2)
-          .attr("text-anchor", "end")
-          .attr("transform", "translate(36,0)")
-          .text(d => d3.format("0.2f")(d.label));
-
-        const legendBbox = d3
-          .select(this.$refs.legend)
-          .node()
-          .getBBox();
-
-        d3.select(this.$refs.legend)
-          .selectAll(".background")
-          .data([legendBbox])
-          .enter()
-          .append("rect")
-          .attr("class", "background")
-          .attr("width", d => d.width)
-          .attr("height", d => d.height)
-          .attr("y", d => d.y)
-          .attr("fill", "white")
-          .lower();
-
-        this.scaleToFit(minX, maxX, minY, maxY);
+        //this.scaleToFit(minX, maxX, minY, maxY);
       }
     },
     scaleToFit(minX, maxX, minY, maxY) {
@@ -548,19 +263,16 @@ export default {
     }
   },
   watch: {
-    hierarchyData() {
+    filteredData() {
       this.draw();
     },
     height() {
       this.draw();
     },
-    areaBy() {
+    groupBy() {
       this.draw();
     },
     colorBy() {
-      this.draw();
-    },
-    useOriginalValues() {
       this.draw();
     }
   }

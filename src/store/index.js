@@ -24,7 +24,7 @@ export default new Vuex.Store({
   },
   mutations: {
     setGroupBy(state, val) {
-      state.areaBy = val;
+      state.groupBy = val;
     },
     setColorBy(state, val) {
       state.colorBy = val;
