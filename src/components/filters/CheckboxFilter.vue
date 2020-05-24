@@ -4,7 +4,6 @@
       v-model="value"
       :options="options"
       :name="filterKey"
-      @change="change"
     ></b-form-checkbox-group>
   </b-form-group>
 </template>
@@ -28,8 +27,13 @@ export default {
               }
             })
     },
-    value () {
-      return this.$store.state.data.filters[this.filterKey]
+    value: {
+      get(){
+        return this.$store.state.data.filters[this.filterKey]
+      },
+      set(val, $event){
+        this.change(val)
+      }
     }
   },
   methods: {

@@ -59,8 +59,24 @@ export default {
   },
   getters: {
     filteredData: state => {
-      // TODO: Filter!
-      return state.csvData
+      // TODO: Filter by "Real target"
+      let fData = state.csvData
+
+      Object.keys(state.filters).forEach(filterKey => {
+        let filterCol = filterCols.find(el => el.key == filterKey)
+        if(filterCol.type == 'checkbox'){
+          if(filterCol.multiple){
+            fData = fData.filter(e => _.intersection(state.filters[filterKey], e[filterKey]).length > 0)
+            
+          } else {
+            fData = fData.filter(e => state.filters[filterKey].includes(e[filterKey]))
+          }
+        }
+        else if(filterCol.type == 'range'){
+          fData = fData.filter(e => state.filters[filterKey][0] <= e[filterKey] && state.filters[filterKey][1] >= e[filterKey])
+        }
+      })
+      return fData
     }
   },
   mutations: {
@@ -71,17 +87,37 @@ export default {
         state.firstLoad = false;
         state.loaded = true;
 
+        // Fill missing data and columns
+        data.forEach(d => {
+          filterCols.forEach(col => {
+            if(col.type == 'checkbox') {
+              d[col.key] = d[col.key] ? d[col.key] : 'N/A'
+            }
+          })
+
+          //remove string spaces and split values
+          let str = d['Esposizione'].replace(/\s/g, '');
+           d['Esposizione'] = str.split(',')
+
+          // Add SLA values
+          if (d['Age'] < 90) {
+            d['Sla'] = "< 3"
+          } else if (d['Age'] >= 90 && d['Age'] < 180) {
+            d['Sla'] = "3"
+          } else if (d['Age'] >=180 && d['Age'] < 365) {
+            d['Sla'] = "6"
+          } else if (d['Age'] > 365) {
+            d['Sla'] = "> 12"
+          }
+        })
+
         // Dynamically fill filters option and values based on map
         filterCols.forEach(filterCol => {
           let fOptions = []
           if (filterCol.type == 'checkbox'){
             let cVals = []
             if (filterCol.multiple) {
-              cVals = [...new Set(_.flatten(data.map(x => {
-                //remove spaces in the value string
-                let str = x[filterCol.key].replace(/\s/g, '');
-                return str.split(',')
-              })))]
+              cVals = [...new Set(_.flatten(data.map(x => x[filterCol.key])))]
             } else {
               cVals = [...new Set(data.map(x => x[filterCol.key]))]
             }
@@ -105,8 +141,8 @@ export default {
         state.dataError = "Wrong CSV format.";
       }
     },
-    setFilterValue(state, key, val) {
-      Vue.set(state.filters, key, val);
+    setFilterValue(state, filter) {
+      Vue.set(state.filters, filter.filterKey, filter.val);
     },
     setExcludeNodes(state, val) {
       Vue.set(state.filters, "excludeNodes", val);
@@ -138,10 +174,9 @@ export default {
       state.loaded = false;
       state.fetchingData = true;
       const csvData = await d3
-        .csv("./data/test.csv", (d)=> {
-          console.log(d)
-        }, d3.autoType)
+        .csv("./data/test.csv", d3.autoType)
         .catch(err => commit("setDataError", "Could not open test data"));
+
       commit("setData", csvData);
       commit("resetFilters");
     },

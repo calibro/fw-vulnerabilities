@@ -231,7 +231,8 @@ export default {
   },
   methods: {
     ...mapMutations([
-      "data/setFilterValue"
+      "data/setFilterValue",
+      "data/resetFilters"
     ]),
     onChangeFilter(filterName, val) {
       this['data/setFilterValue'](filterName, val)
