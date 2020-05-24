@@ -11,7 +11,8 @@
 
 <script>
 import * as d3 from "d3";
-import { groups } from "d3-array";
+import d3Annotation from "d3-svg-annotation";
+
 import d3Legend from "d3-svg-legend";
 import { mapState, mapGetters, mapMutations } from "vuex";
 import tippy from "tippy.js";
@@ -200,7 +201,10 @@ export default {
             })
             .attr("fill", function(d) {
               return self.colorScales[self.colorBy](d[self.colorBy])
-            });
+            })
+            .on("click", function(d) {
+              self.addAnnotation(d, this)
+            })
 
         let labels = beeswarm.append('g')
             .attr('id', 'labels')
@@ -248,18 +252,36 @@ export default {
           labelSize * 2}`
       );
     },
-    tooltipContent(item) {
-      var ComponentClass = Vue.extend(ChartTooltip);
-      if (item) {
-        var instance = new ComponentClass({
-          propsData: {
-            item: item.data
-          }
-        });
-        instance.$mount();
-        return instance.$el;
-      }
-      return "";
+    addAnnotation(item, node) {
+
+      const type = d3Annotation.annotationCallout
+
+      const annotations = [{
+        note: {
+          title: item['Vulnerability'] || item['Code'],
+          label: item['Vulnerability description:'] || item['Code'],
+          bgPadding: {"top":15,"left":10,"right":10,"bottom":10}
+        },
+        //can use x, y directly instead of data
+        data: item,
+        className: "show-bg",
+        y: item.y,
+        x: item.x,
+        dx: 100,
+        dy: 100
+      }]
+
+      const makeAnnotations = d3Annotation.annotation()
+        // TODO Make only one handle of annotation in "edit mode"
+        .editMode(true)
+        .notePadding(15)
+        .type(type)
+        .annotations(annotations)
+
+      d3.select(node.parentNode)
+        .append("g")
+        .attr("class", "annotation-group")
+        .call(makeAnnotations)
     }
   },
   watch: {

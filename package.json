@@ -23,6 +23,7 @@
     "d3": "^5.15.0",
     "d3-array": "^2.4.0",
     "d3-scale": "^3.2.1",
+    "d3-svg-annotation": "^2.5.1",
     "d3-svg-legend": "^2.25.6",
     "save-as": "^0.1.8",
     "save-svg-as-png": "^1.4.17",
