@@ -38,10 +38,10 @@
             role="tabpanel"
           >
             <div class="filter-body">
-              <!--<hierarchy-filter
-                :excludeNodes="excludeNodes"
-                :onChange="this['data/toggleExcludeNodes']"
-              ></hierarchy-filter>-->
+              <group-list-filter
+                filterKey="Real Target"
+                @change="onChangeFilter"
+              ></group-list-filter>
             </div>
           </b-collapse>
         </div>
@@ -211,7 +211,7 @@
 import ClickOutside from "vue-click-outside";
 import CheckboxFilter from "./filters/CheckboxFilter";
 import RangeFilter from "./filters/RangeFilter";
-import HierarchyFilter from "./filters/HierarchyFilter";
+import GroupListFilter from "./filters/GroupListFilter";
 
 import { mapState, mapMutations } from "vuex";
 
@@ -220,7 +220,7 @@ export default {
   components: {
     RangeFilter,
     CheckboxFilter,
-    HierarchyFilter
+    GroupListFilter
   },
   data() {
     return {

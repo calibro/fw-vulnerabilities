@@ -10,7 +10,10 @@ const mandatoryCols = [
 ];
 
 const filterCols = [
-  //"Real Target"
+  {
+    key: "Real Target",
+    type: "group-list"
+  },
   {
     key: "CVSS Score",
     type: 'range'
@@ -59,7 +62,6 @@ export default {
   },
   getters: {
     filteredData: state => {
-      // TODO: Filter by "Real target"
       let fData = state.csvData
 
       Object.keys(state.filters).forEach(filterKey => {
@@ -67,13 +69,16 @@ export default {
         if(filterCol.type == 'checkbox'){
           if(filterCol.multiple){
             fData = fData.filter(e => _.intersection(state.filters[filterKey], e[filterKey]).length > 0)
-            
+
           } else {
             fData = fData.filter(e => state.filters[filterKey].includes(e[filterKey]))
           }
         }
         else if(filterCol.type == 'range'){
           fData = fData.filter(e => state.filters[filterKey][0] <= e[filterKey] && state.filters[filterKey][1] >= e[filterKey])
+        }
+        else if (filterCol.type == 'group-list'){
+          fData = fData.filter(e => state.filters[filterKey].includes(String(e[filterKey])))
         }
       })
       return fData
@@ -132,8 +137,11 @@ export default {
               Math.max(...rangeVals)
             ];
           }
-          Vue.set(state.filterOptions, filterCol.key, fOptions)
-          Vue.set(state.filters, filterCol.key, fOptions)
+          else if (filterCol.type == 'group-list'){
+            fOptions = Object.keys(_.groupBy(data, d => d[filterCol.key]))
+          }
+          Vue.set(state.filterOptions, filterCol.key, fOptions.slice())
+          Vue.set(state.filters, filterCol.key, fOptions.slice())
         })
       } else {
         state.csvData = [];
@@ -151,18 +159,6 @@ export default {
       state.loaded = false;
       state.fetchingData = false;
       state.dataError = error;
-    },
-    toggleExcludeNode(state, val) {
-      let exHierarchy = state.filters.excludeNodes;
-      let findIndex = exHierarchy.findIndex(
-        e => e.level == val.level && e.name == val.name
-      );
-      if (findIndex >= 0 || val.forceCheck) {
-        exHierarchy.splice(findIndex, 1);
-      } else {
-        exHierarchy.push(val);
-      }
-      Vue.set(state.filters, "excludeNodes", exHierarchy);
     },
     resetFilters(state) {
       let resetFilters = Object.assign({}, state.filterOptions);
