@@ -98,18 +98,16 @@ export default {
         svg.selectAll(".no-data-text").remove();
         
         //TODO implement transitions
-        svg.selectAll("*").remove();
+        //svg.selectAll("*").remove();
         
         // Define margins
         var margin = {
-            top: 5,
+            top: 25,
             right: 25,
             bottom: 0,
             left: 25
         };
-
-        //define title space
-        var titleSpace = 30;
+        var groupLabelWidth = 300
   
         var groups = d3.nest()
             .key(d => d[this.groupBy])
@@ -117,7 +115,7 @@ export default {
 
         // define single beswarm plot height, depending on the number of bar charts
         var w = +vWidth - margin.left - margin.right,
-            h = (+vHeight - margin.bottom - margin.top - ((titleSpace) * (groups.length - 1))) / groups.length;
+            h = (+vHeight - margin.bottom - margin.top) / groups.length;
 
         var xScale = d3.scaleLinear()
 
@@ -136,7 +134,7 @@ export default {
         //     xMax = new Date(xMax)
         // }
 
-        xScale.range([10, w - 10])
+        xScale.range([groupLabelWidth , w])
             .domain([xMin, xMax]);
 
         // Spatialization iterations
@@ -148,21 +146,49 @@ export default {
         var maxRadius = 20
         var radius = 5
 
-        groups.forEach((item, index) => {
+        let beeswarm = svg
+              .selectAll("g.beeswarm")
+              .data(groups, d => d.key)
 
-        let beeswarm = svg.append("g")
-            .attr('id', item.key === "undefined" ? "swarm" : "swarm-" + item.key)
-            .attr("transform", "translate(" + margin.left + "," + index * (h + titleSpace) + ")");
+        let beeswarmEnter = beeswarm.enter()
+              .append('g')
+              .attr('class', 'beeswarm')
+              .attr('id', (d) => d.key === "undefined" ? "swarm" : "swarm-" + d.key)
+              .attr("transform", (d, i) => "translate(" + margin.left  + "," + (margin.top + i * h) + ")");
 
-        // Draw title
-        beeswarm.append("text")
-            .attr("x", -margin.left)
-            .attr("y", titleSpace - 7)
-            .style("font-size", "10px")
-            .style("font-family", "Arial, Helvetica")
-            .text(item.key);
+        let labels = beeswarmEnter.append('g')
+              .attr('id', 'labels')
+              .attr('class', 'label')
+              .style("font-size", "30px")
+              .append('text')
+              .attr('x', 10)
+              .attr('y', h/2)
+              .attr('text-anchor', 'start')
+              .attr('fill', '#000')
+              .text(function(d) {
+                if (d.key) return d.key;
+              })
 
-        let data = item.values;
+        let refLines = beeswarmEnter
+            .append("line")
+            .style("stroke", "black")  // colour the line
+            .attr("x1", margin.left)
+            .attr("y1", h)
+            .attr("x2", w)
+            .attr("y2", h);
+
+        beeswarm.exit().remove()
+        beeswarm = beeswarm.merge(beeswarmEnter)
+
+        let data = []
+        groups.forEach((g, gIndex) => {
+          data = data.concat(g.values.map(e => {
+            return {
+              ...e,
+              groupIndex: gIndex
+            }
+          }))
+        })
 
         var simulation = d3.forceSimulation(data)
             .force("x",
@@ -171,7 +197,9 @@ export default {
                 })
                 .strength(1)
             )
-            .force("y", d3.forceY(h / 2))
+            .force("y", d3.forceY(function(d) {
+                    return (h * d.groupIndex) + h/2
+                }))
             .force("collide", d3.forceCollide(function(d) {
                 //return radius(d.radius) + marginCircles()
                 return radius + marginCircles
@@ -180,59 +208,201 @@ export default {
 
         for (var i = 0; i < 240; ++i) simulation.tick();
 
-        let bees = beeswarm.append('g')
-            .attr('id', 'circles')
-            .attr('class', 'bees')
-            .selectAll("circle")
-            .data(data).enter()
-            .append('circle')
-            .attr('id', function(d) {
+        let bees = svg
+              .selectAll(".bee")
+              .data(data, function(d) {
                 return d['Code']
-            })
+              })
+        debugger
+        let beesEnter = bees.enter()
+            .append('circle')
+            .attr('class', 'bee')
             .attr('r', function(d) {
                 //return radius(d.radius)
                 return radius
             })
-            .attr('cx', function(d) {
-                return d.x
-            })
-            .attr('cy', function(d) {
-                return d.y
-            })
-            .attr("fill", function(d) {
-              return self.colorScales[self.colorBy](d[self.colorBy])
-            })
             .on("click", function(d) {
               self.addAnnotation(d, this)
             })
+        
+        bees.exit().remove();
 
-        let labels = beeswarm.append('g')
-            .attr('id', 'labels')
-            .attr('class', 'label')
-            .selectAll("text")
-            .data(data).enter()
-            .append('text')
-            .attr('x', function(d) {
+        bees = bees.merge(beesEnter);
+        bees
+          .transition()
+          .duration(500)
+          .attr('cx', function(d) {
                 return d.x
             })
-            .attr('y', function(d) {
-                return d.y
+          .attr('cy', function(d) {
+              return d.y
+          })
+          .attr("fill", function(d) {
+              return self.colorScales[self.colorBy](d[self.colorBy])
             })
-            .attr('text-anchor', 'middle')
-            .attr('fill', '#000')
-            .text(function(d) {
-                if (d.label) return d.label;
-            })
-        })
+        /*groups.forEach((item, index) => {
+
+          let data = item.values;
+          var simulation = d3.forceSimulation(data)
+                .force("x",
+                    d3.forceX(function(d) {
+                        return xScale(d['CVSS Score'])
+                    })
+                    .strength(1)
+                )
+                .force("y", d3.forceY(h / 2))
+                .force("collide", d3.forceCollide(function(d) {
+                    //return radius(d.radius) + marginCircles()
+                    return radius + marginCircles
+                }).iterations(anticollisionIterations))
+                .stop()
+
+            for (var i = 0; i < 240; ++i) simulation.tick();
+
+            let beeContainer = svg.selectAll('#circles-' + item.key)
+            debugger
+            if (beeContainer.size() == 0){
+              beeContainer = svg.append('g')
+                .attr('id', 'circles-' + item.key)
+                .attr('class', 'bees')
+                .attr("transform", d => "translate(" + (margin.left + groupLabelWidth)  + "," + (margin.top + index * h) + ")")
+            }
+
+            let bees = beeContainer.selectAll(".bee")
+                .data(data, d => d['Code'])
+            debugger
+            bees.exit().remove();
+
+            let beesEnter = bees.enter()
+                .append('circle')
+                .attr('class', 'bee')
+                .attr('id', function(d) {
+                    return d['Code']
+                })
+                .attr('r', function(d) {
+                    //return radius(d.radius)
+                    return radius
+                })
+                .on("click", function(d) {
+                  self.addAnnotation(d, this)
+                })
+
+            bees = bees.merge(beesEnter);
+            bees
+              .transition()
+              .duration(500)
+              .attr('cx', function(d) {
+                    return d.x
+                })
+                .attr('cy', function(d) {
+                    return d.y
+                })
+                .attr("fill", function(d) {
+                  return self.colorScales[self.colorBy](d[self.colorBy])
+                })
+        })*/
+
+
+        /*groups.forEach((item, index) => {
+
+          let beeswarm = svg.append("g")
+              .attr('id', item.key === "undefined" ? "swarm" : "swarm-" + item.key)
+              .attr("transform", "translate(" + margin.left + "," + index * (h + titleSpace) + ")");
+
+          // Draw title
+          beeswarm.append("text")
+              .attr("x", -margin.left)
+              .attr("y", titleSpace - 7)
+              .style("font-size", "10px")
+              .style("font-family", "Arial, Helvetica")
+              .text(item.key);
+
+          let data = item.values;
+
+          var simulation = d3.forceSimulation(data)
+              .force("x",
+                  d3.forceX(function(d) {
+                      return xScale(d['CVSS Score'])
+                  })
+                  .strength(1)
+              )
+              .force("y", d3.forceY(h / 2))
+              .force("collide", d3.forceCollide(function(d) {
+                  //return radius(d.radius) + marginCircles()
+                  return radius + marginCircles
+              }).iterations(anticollisionIterations))
+              .stop()
+
+          for (var i = 0; i < 240; ++i) simulation.tick();
+
+          let bees = beeswarm.append('g')
+              .attr('id', 'circles')
+              .attr('class', 'bees')
+              .selectAll(".bee")
+              .data(data)
+              
+          let beesEnter = bees.enter()
+              .append('circle')
+              .attr('class', 'bee')
+              .attr('id', function(d) {
+                  return d['Code']
+              })
+              .attr('r', function(d) {
+                  //return radius(d.radius)
+                  return radius
+              })
+              .on("click", function(d) {
+                self.addAnnotation(d, this)
+              })
+          
+          bees.exit().remove();
+
+          bees = bees.merge(beesEnter);
+          bees
+            .transition()
+            .duration(500)
+            .attr('cx', function(d) {
+                  return d.x
+              })
+              .attr('cy', function(d) {
+                  return d.y
+              })
+              .attr("fill", function(d) {
+                return self.colorScales[self.colorBy](d[self.colorBy])
+              })
+
+          let labels = beeswarm.append('g')
+              .attr('id', 'labels')
+              .attr('class', 'label')
+              .selectAll("text")
+              .data(data).enter()
+              .append('text')
+              .attr('x', function(d) {
+                  return d.x
+              })
+              .attr('y', function(d) {
+                  return d.y
+              })
+              .attr('text-anchor', 'middle')
+              .attr('fill', '#000')
+              .text(function(d) {
+                  if (d.label) return d.label;
+              })
+        })*/
 
         // After all the charts, draw x axis
+        svg.selectAll("g.axis").remove()
+        
         svg.append("g")
             .attr('id', '"x-axis')
             .attr("class", "x axis")
-            .style("font-size", "10px")
+            .style("font-size", "18px")
             .style("font-family", "Arial, Helvetica")
-            .attr("transform", "translate(" + margin.left + "," + (0) + ")")
-            .call(d3.axisBottom(xScale));
+            .attr("transform", "translate(" + (0) + "," + ( margin.top ) + ")")
+            .call(
+              d3.axisTop(xScale)
+              .tickSize(-vHeight)
+              );
 
         // Set styles
         d3.selectAll(".axis line, .axis path")
@@ -259,7 +429,7 @@ export default {
       const annotations = [{
         note: {
           title: item['Vulnerability'] || item['Code'],
-          label: item['Vulnerability description:'] || item['Code'],
+          label: item['CVSS Score'],
           bgPadding: {"top":15,"left":10,"right":10,"bottom":10}
         },
         //can use x, y directly instead of data
