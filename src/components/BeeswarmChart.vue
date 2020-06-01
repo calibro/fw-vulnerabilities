@@ -321,7 +321,6 @@ export default {
       }]
 
       const makeAnnotations = d3Annotation.annotation()
-        // TODO Make only one handle of annotation in "edit mode"
         .editMode(true)
         .notePadding(15)
         .type(type)
@@ -331,6 +330,13 @@ export default {
         .append("g")
         .attr("class", "annotation-group")
         .call(makeAnnotations)
+
+      // Remove draggable handle on the note target
+      let annHanldes = d3.selectAll('g.annotation')
+      .select("circle.handle")
+      annHanldes.remove();
+
+      
     }
   },
   watch: {
