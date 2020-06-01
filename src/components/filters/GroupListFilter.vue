@@ -43,11 +43,13 @@ export default {
     },
     options () {
       let opts = this.$store.state.data.filterOptions[this.filterKey]
+      let allData = this.$store.state.data.csvData
       return opts && opts.map(key => {
               return {
                 id: key,
                 label: 'Application ' + key,
-                count: 'NN'
+                // Should we count the original dataset or the filtered one?
+                count: allData.filter(e => e[this.filterKey] == key).length
               }
             })
     },
