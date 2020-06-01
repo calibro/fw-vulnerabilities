@@ -61,7 +61,6 @@ export default {
         "Fattore di Esposizione": esposizioneScale
       };
 
-
       this.initialized = true;
     },
     draw() {
@@ -146,7 +145,7 @@ export default {
         var padding = 10
         var minRadius = 2
         var maxRadius = 20
-        var radius = 5
+        var radius = 4
 
         let beeswarm = svg
               .selectAll("g.beeswarm")
@@ -186,7 +185,7 @@ export default {
           .attr("transform", (d, i) => "translate(" + margin.left  + "," + (margin.top + i * h) + ")");
 
         beeswarm.selectAll('.label text')
-            .attr('x', 10)
+            .attr('x', margin.left)
             .attr('y', h/2)
 
         beeswarm.selectAll('.group-bottom-line')
@@ -206,12 +205,14 @@ export default {
           data = data.concat(g.values.map(e => {
             return {
               ...e,
-              groupIndex: gIndex
+              groupIndex: gIndex,
+              x: vWidth/2,
+              y: vHeight/2
             }
           }))
         })
-
-        var simulation = d3.forceSimulation(data)
+        
+        this.simulation = d3.forceSimulation(data)
             .force("x",
                 d3.forceX(function(d) {
                     return xScale(d['CVSS Score'])
@@ -226,9 +227,10 @@ export default {
                 return radius + marginCircles
             }).iterations(anticollisionIterations)
             )
-        .stop()
+    
+        //.stop()
 
-        for (var i = 0; i < 240; ++i) simulation.tick();
+        //for (var i = 0; i < 240; ++i) simulation.tick();
 
         let bees = svg
               .selectAll(".bee")
@@ -240,9 +242,6 @@ export default {
             .attr('r', radius)
             .attr('cx', d => d.x)
             .attr('cy', d => d.y)
-            .attr("fill", function(d) {
-              return self.colorScales[self.colorBy](d[self.colorBy])
-            })
             .on("click", function(d) {
               self.addAnnotation(d, this)
             })
@@ -251,23 +250,31 @@ export default {
 
         bees = bees.merge(beesEnter);
 
-        /*simulation
+        this.simulation
         .nodes(data)
         .on("tick", function(d){
               bees
                   .attr("cx", function(d){ return d.x; })
                   .attr("cy", function(d){ return d.y; })
+              self.annotations.forEach(a => {
+                debugger
+                a.update()
+              })
             })
-        .restart()*/
+        .alpha(1).restart()
+        //
 
         // Alternative to simulation ticks (stop simulation, run ticks, then update bees position)
         bees
+          .attr("fill", function(d) {
+              return self.colorScales[self.colorBy](d[self.colorBy])
+            })
+        /*
           .transition()
           .duration(1000)
-          .attr('r', radius)
           .attr('cx', d => d.x)
           .attr('cy', d => d.y)
-
+        */
 
         // After all the charts, draw x axis
         svg.selectAll("g.axis").remove()
@@ -314,17 +321,16 @@ export default {
         //can use x, y directly instead of data
         data: item,
         className: "show-bg",
-        y: item.y,
-        x: item.x,
         dx: (item.x > this.width / 2) ? -50 : 50,
         dy: 100
       }]
 
-      const makeAnnotations = d3Annotation.annotation()
+      let makeAnnotations = d3Annotation.annotation()
         .editMode(true)
         .notePadding(15)
         .type(type)
         .annotations(annotations)
+        .accessors({ x: d => d.x , y: d => d.y})
 
       d3.select(node.parentNode)
         .append("g")
@@ -336,7 +342,7 @@ export default {
       .select("circle.handle")
       annHanldes.remove();
 
-      
+
     }
   },
   watch: {
