@@ -164,6 +164,7 @@ export default {
               .attr('x', 10)
               .attr('y', h/2)
               .attr('text-anchor', 'start')
+              .attr('alignment-baseline', 'middle')
               .attr('fill', '#000')
               .text(function(d) {
                 if (d.key) return d.key;
@@ -171,11 +172,19 @@ export default {
 
         let refLines = beeswarmEnter
             .append("line")
-            .style("stroke", "black")  // colour the line
+            .style("stroke", "#ccc")
             .attr("x1", margin.left)
             .attr("y1", h)
-            .attr("x2", w)
+            .attr("x2", w - margin.right)
             .attr("y2", h);
+
+        beeswarmEnter
+            .append("line")
+            .style("stroke", "#ccc")
+            .attr("x1", xScale(xMin) - margin.right)
+            .attr("y1", h/2)
+            .attr("x2", xScale(xMax) - margin.right)
+            .attr("y2", h/2);
 
         beeswarm.exit().remove()
         beeswarm = beeswarm.merge(beeswarmEnter)
@@ -190,7 +199,7 @@ export default {
           }))
         })
 
-        var simulation = d3.forceSimulation(data)
+        var simulation = d3.forceSimulation()
             .force("x",
                 d3.forceX(function(d) {
                     return xScale(d['CVSS Score'])
@@ -198,201 +207,62 @@ export default {
                 .strength(1)
             )
             .force("y", d3.forceY(function(d) {
-                    return (h * d.groupIndex) + h/2
+                    return (h * d.groupIndex) + margin.top + h/2
                 }))
             .force("collide", d3.forceCollide(function(d) {
                 //return radius(d.radius) + marginCircles()
                 return radius + marginCircles
-            }).iterations(anticollisionIterations))
-            .stop()
+            }).iterations(anticollisionIterations)
+            )
+        //.stop()
 
-        for (var i = 0; i < 240; ++i) simulation.tick();
+        //for (var i = 0; i < 240; ++i) simulation.tick();
 
         let bees = svg
               .selectAll(".bee")
               .data(data, function(d) {
-                return d['Code']
+                return d.dataId
               })
-        debugger
+
         let beesEnter = bees.enter()
             .append('circle')
             .attr('class', 'bee')
-            .attr('r', function(d) {
-                //return radius(d.radius)
-                return radius
+            .attr('r', radius)
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y)
+            .attr("fill", function(d) {
+              return self.colorScales[self.colorBy](d[self.colorBy])
             })
             .on("click", function(d) {
               self.addAnnotation(d, this)
             })
-        
+
         bees.exit().remove();
 
         bees = bees.merge(beesEnter);
-        bees
+
+        simulation
+        .nodes(data)
+        .on("tick", function(d){
+              bees
+                  .attr("cx", function(d){ return d.x; })
+                  .attr("cy", function(d){ return d.y; })
+            })
+        .restart()
+
+        // Alternative to simulation ticks (stop simulation, run ticks, then update bees position)
+        /*bees
           .transition()
-          .duration(500)
-          .attr('cx', function(d) {
-                return d.x
-            })
-          .attr('cy', function(d) {
-              return d.y
-          })
-          .attr("fill", function(d) {
-              return self.colorScales[self.colorBy](d[self.colorBy])
-            })
-        /*groups.forEach((item, index) => {
+          .duration(1000)
+          .attr('r', radius)
+          .attr('cx', d => d.x)
+          .attr('cy', d => d.y)
 
-          let data = item.values;
-          var simulation = d3.forceSimulation(data)
-                .force("x",
-                    d3.forceX(function(d) {
-                        return xScale(d['CVSS Score'])
-                    })
-                    .strength(1)
-                )
-                .force("y", d3.forceY(h / 2))
-                .force("collide", d3.forceCollide(function(d) {
-                    //return radius(d.radius) + marginCircles()
-                    return radius + marginCircles
-                }).iterations(anticollisionIterations))
-                .stop()
-
-            for (var i = 0; i < 240; ++i) simulation.tick();
-
-            let beeContainer = svg.selectAll('#circles-' + item.key)
-            debugger
-            if (beeContainer.size() == 0){
-              beeContainer = svg.append('g')
-                .attr('id', 'circles-' + item.key)
-                .attr('class', 'bees')
-                .attr("transform", d => "translate(" + (margin.left + groupLabelWidth)  + "," + (margin.top + index * h) + ")")
-            }
-
-            let bees = beeContainer.selectAll(".bee")
-                .data(data, d => d['Code'])
-            debugger
-            bees.exit().remove();
-
-            let beesEnter = bees.enter()
-                .append('circle')
-                .attr('class', 'bee')
-                .attr('id', function(d) {
-                    return d['Code']
-                })
-                .attr('r', function(d) {
-                    //return radius(d.radius)
-                    return radius
-                })
-                .on("click", function(d) {
-                  self.addAnnotation(d, this)
-                })
-
-            bees = bees.merge(beesEnter);
-            bees
-              .transition()
-              .duration(500)
-              .attr('cx', function(d) {
-                    return d.x
-                })
-                .attr('cy', function(d) {
-                    return d.y
-                })
-                .attr("fill", function(d) {
-                  return self.colorScales[self.colorBy](d[self.colorBy])
-                })
-        })*/
-
-
-        /*groups.forEach((item, index) => {
-
-          let beeswarm = svg.append("g")
-              .attr('id', item.key === "undefined" ? "swarm" : "swarm-" + item.key)
-              .attr("transform", "translate(" + margin.left + "," + index * (h + titleSpace) + ")");
-
-          // Draw title
-          beeswarm.append("text")
-              .attr("x", -margin.left)
-              .attr("y", titleSpace - 7)
-              .style("font-size", "10px")
-              .style("font-family", "Arial, Helvetica")
-              .text(item.key);
-
-          let data = item.values;
-
-          var simulation = d3.forceSimulation(data)
-              .force("x",
-                  d3.forceX(function(d) {
-                      return xScale(d['CVSS Score'])
-                  })
-                  .strength(1)
-              )
-              .force("y", d3.forceY(h / 2))
-              .force("collide", d3.forceCollide(function(d) {
-                  //return radius(d.radius) + marginCircles()
-                  return radius + marginCircles
-              }).iterations(anticollisionIterations))
-              .stop()
-
-          for (var i = 0; i < 240; ++i) simulation.tick();
-
-          let bees = beeswarm.append('g')
-              .attr('id', 'circles')
-              .attr('class', 'bees')
-              .selectAll(".bee")
-              .data(data)
-              
-          let beesEnter = bees.enter()
-              .append('circle')
-              .attr('class', 'bee')
-              .attr('id', function(d) {
-                  return d['Code']
-              })
-              .attr('r', function(d) {
-                  //return radius(d.radius)
-                  return radius
-              })
-              .on("click", function(d) {
-                self.addAnnotation(d, this)
-              })
-          
-          bees.exit().remove();
-
-          bees = bees.merge(beesEnter);
-          bees
-            .transition()
-            .duration(500)
-            .attr('cx', function(d) {
-                  return d.x
-              })
-              .attr('cy', function(d) {
-                  return d.y
-              })
-              .attr("fill", function(d) {
-                return self.colorScales[self.colorBy](d[self.colorBy])
-              })
-
-          let labels = beeswarm.append('g')
-              .attr('id', 'labels')
-              .attr('class', 'label')
-              .selectAll("text")
-              .data(data).enter()
-              .append('text')
-              .attr('x', function(d) {
-                  return d.x
-              })
-              .attr('y', function(d) {
-                  return d.y
-              })
-              .attr('text-anchor', 'middle')
-              .attr('fill', '#000')
-              .text(function(d) {
-                  if (d.label) return d.label;
-              })
-        })*/
+            */
 
         // After all the charts, draw x axis
         svg.selectAll("g.axis").remove()
-        
+
         svg.append("g")
             .attr('id', '"x-axis')
             .attr("class", "x axis")
@@ -437,7 +307,7 @@ export default {
         className: "show-bg",
         y: item.y,
         x: item.x,
-        dx: 100,
+        dx: (item.x > this.width / 2) ? -50 : 50,
         dy: 100
       }]
 
