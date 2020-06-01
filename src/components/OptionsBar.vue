@@ -1,10 +1,22 @@
 <template>
   <b-container class="options-bar">
     <b-row>
-      <b-col sm="6">
+      <b-col sm="4">
         <data-selector></data-selector>
       </b-col>
-      <b-col sm="3">
+      <b-col sm="2">
+        TO ADD: dot size
+      </b-col>
+      <b-col sm="2">
+        <fw-select
+          label="Sort by"
+          :value="sortBy"
+          @change="setSortBy"
+          :options="sortOptions"
+        >
+        </fw-select>
+      </b-col>
+      <b-col sm="2">
         <fw-select
           label="Group by"
           :value="groupBy"
@@ -13,7 +25,7 @@
         >
         </fw-select>
       </b-col>
-      <b-col sm="3">
+      <b-col sm="2">
         <fw-select
           label="Color by"
           :value="colorBy"
@@ -45,14 +57,18 @@ export default {
         { value: "Priority", text: "Priority" },
         { value: "Age", text: "Age" },
         { value: "Fattore di Esposizione", text: "Fattore di Esposizione" }
+      ],
+      sortOptions: [
+        { value: "count", text: "Count" },
+        { value: "alphabetically", text: "Alphabetically" }
       ]
     };
   },
   computed: {
-    ...mapState(["groupBy", "colorBy"])
+    ...mapState(["groupBy", "colorBy", "sortBy"])
   },
   methods: {
-    ...mapMutations(["setGroupBy", "setColorBy"])
+    ...mapMutations(["setGroupBy", "setColorBy", "setSortBy"])
   }
 };
 </script>

@@ -25,6 +25,7 @@ export default {
     ...mapState({
       colorBy: state => state.colorBy,
       groupBy: state => state.groupBy,
+      sortBy: state => state.sortBy,
       csvData: state => state.data.csvData
     }),
     ...mapGetters({
@@ -60,12 +61,6 @@ export default {
         "Fattore di Esposizione": esposizioneScale
       };
 
-      /*this.legendLabels = {
-        lastmonth: "last month volume",
-        lastday: "last day volume",
-        email_score_name: "reputation",
-        blacklists_count: "blacklist count"
-      };*/
 
       this.initialized = true;
     },
@@ -112,6 +107,13 @@ export default {
         var groups = d3.nest()
             .key(d => d[this.groupBy])
             .entries(this.filteredData)
+            .sort((a, b) => {
+              if (self.sortBy == 'count'){
+                return a.values.length > b.values.length ? -1 : 1
+              } else {
+                return a.key > b.key ? 1 : -1
+              }
+            })
 
         // define single beswarm plot height, depending on the number of bar charts
         var w = +vWidth - margin.left - margin.right,
@@ -154,15 +156,12 @@ export default {
               .append('g')
               .attr('class', 'beeswarm')
               .attr('id', (d) => d.key === "undefined" ? "swarm" : "swarm-" + d.key)
-              .attr("transform", (d, i) => "translate(" + margin.left  + "," + (margin.top + i * h) + ")");
 
-        let labels = beeswarmEnter.append('g')
+        beeswarmEnter.append('g')
               .attr('id', 'labels')
               .attr('class', 'label')
               .style("font-size", "30px")
               .append('text')
-              .attr('x', 10)
-              .attr('y', h/2)
               .attr('text-anchor', 'start')
               .attr('alignment-baseline', 'middle')
               .attr('fill', '#000')
@@ -170,24 +169,37 @@ export default {
                 if (d.key) return d.key;
               })
 
-        let refLines = beeswarmEnter
+        beeswarmEnter
             .append("line")
+            .attr("class", "group-bottom-line")
             .style("stroke", "#ccc")
-            .attr("x1", margin.left)
-            .attr("y1", h)
-            .attr("x2", w - margin.right)
-            .attr("y2", h);
 
         beeswarmEnter
             .append("line")
+            .attr("class", "group-middle-line")
             .style("stroke", "#ccc")
+
+        beeswarm.exit().remove()
+        beeswarm = beeswarm.merge(beeswarmEnter)
+
+        beeswarm
+          .attr("transform", (d, i) => "translate(" + margin.left  + "," + (margin.top + i * h) + ")");
+
+        beeswarm.selectAll('.label text')
+            .attr('x', 10)
+            .attr('y', h/2)
+
+        beeswarm.selectAll('.group-bottom-line')
+            .attr("x1", margin.left)
+            .attr("y1", h)
+            .attr("x2", w - margin.right)
+            .attr("y2", h)
+
+        beeswarm.selectAll('.group-middle-line')
             .attr("x1", xScale(xMin) - margin.right)
             .attr("y1", h/2)
             .attr("x2", xScale(xMax) - margin.right)
             .attr("y2", h/2);
-
-        beeswarm.exit().remove()
-        beeswarm = beeswarm.merge(beeswarmEnter)
 
         let data = []
         groups.forEach((g, gIndex) => {
@@ -199,7 +211,7 @@ export default {
           }))
         })
 
-        var simulation = d3.forceSimulation()
+        var simulation = d3.forceSimulation(data)
             .force("x",
                 d3.forceX(function(d) {
                     return xScale(d['CVSS Score'])
@@ -214,15 +226,13 @@ export default {
                 return radius + marginCircles
             }).iterations(anticollisionIterations)
             )
-        //.stop()
+        .stop()
 
-        //for (var i = 0; i < 240; ++i) simulation.tick();
+        for (var i = 0; i < 240; ++i) simulation.tick();
 
         let bees = svg
               .selectAll(".bee")
-              .data(data, function(d) {
-                return d.dataId
-              })
+              .data(data, d => d.dataId)
 
         let beesEnter = bees.enter()
             .append('circle')
@@ -241,24 +251,23 @@ export default {
 
         bees = bees.merge(beesEnter);
 
-        simulation
+        /*simulation
         .nodes(data)
         .on("tick", function(d){
               bees
                   .attr("cx", function(d){ return d.x; })
                   .attr("cy", function(d){ return d.y; })
             })
-        .restart()
+        .restart()*/
 
         // Alternative to simulation ticks (stop simulation, run ticks, then update bees position)
-        /*bees
+        bees
           .transition()
           .duration(1000)
           .attr('r', radius)
           .attr('cx', d => d.x)
           .attr('cy', d => d.y)
 
-            */
 
         // After all the charts, draw x axis
         svg.selectAll("g.axis").remove()
@@ -293,7 +302,7 @@ export default {
       );
     },
     addAnnotation(item, node) {
-
+      //TODO: Update annotation with nodes
       const type = d3Annotation.annotationCallout
 
       const annotations = [{
@@ -335,6 +344,9 @@ export default {
       this.draw();
     },
     colorBy() {
+      this.draw();
+    },
+    sortBy() {
       this.draw();
     }
   }

@@ -93,7 +93,8 @@ export default {
         state.loaded = true;
 
         // Fill missing data and columns
-        data.forEach(d => {
+        data.forEach((d, index) => {
+          d.dataId = index
           filterCols.forEach(col => {
             if(col.type == 'checkbox') {
               d[col.key] = d[col.key] ? d[col.key] : 'N/A'
