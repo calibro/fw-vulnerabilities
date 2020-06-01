@@ -256,10 +256,6 @@ export default {
               bees
                   .attr("cx", function(d){ return d.x; })
                   .attr("cy", function(d){ return d.y; })
-              self.annotations.forEach(a => {
-                debugger
-                a.update()
-              })
             })
         .alpha(1).restart()
         //
