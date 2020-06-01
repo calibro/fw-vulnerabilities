@@ -5,7 +5,13 @@
         <data-selector></data-selector>
       </b-col>
       <b-col sm="2">
-        TO ADD: dot size
+        <fw-slider
+          label="Dot size"
+          :value="dotSize"
+          @input="setDotSize"
+          min=1
+          max=10
+        ></fw-slider>
       </b-col>
       <b-col sm="2">
         <fw-select
@@ -65,10 +71,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(["groupBy", "colorBy", "sortBy"])
+    ...mapState(["groupBy", "colorBy", "sortBy", "dotSize"])
   },
   methods: {
-    ...mapMutations(["setGroupBy", "setColorBy", "setSortBy"])
+    ...mapMutations(["setGroupBy", "setColorBy", "setSortBy", "setDotSize"])
   }
 };
 </script>

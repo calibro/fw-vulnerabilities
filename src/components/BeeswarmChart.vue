@@ -26,7 +26,8 @@ export default {
       colorBy: state => state.colorBy,
       groupBy: state => state.groupBy,
       sortBy: state => state.sortBy,
-      csvData: state => state.data.csvData
+      dotSize: state => state.dotSize,
+      csvData: state => state.data.csvData,
     }),
     ...mapGetters({
       filteredData: "data/filteredData",
@@ -140,12 +141,12 @@ export default {
 
         // Spatialization iterations
         var anticollisionIterations = 1
-        var marginCircles = 0.5
+        var marginCircles = 1
         // Space between barcharts
         var padding = 10
         var minRadius = 2
         var maxRadius = 20
-        var radius = 4
+        var radius = this.dotSize
 
         let beeswarm = svg
               .selectAll("g.beeswarm")
@@ -239,9 +240,6 @@ export default {
         let beesEnter = bees.enter()
             .append('circle')
             .attr('class', 'bee')
-            .attr('r', radius)
-            .attr('cx', d => d.x)
-            .attr('cy', d => d.y)
             .on("click", function(d) {
               self.addAnnotation(d, this)
             })
@@ -260,11 +258,14 @@ export default {
         .alpha(1).restart()
         //
 
-        // Alternative to simulation ticks (stop simulation, run ticks, then update bees position)
+
         bees
+          .attr('r', radius)
           .attr("fill", function(d) {
               return self.colorScales[self.colorBy](d[self.colorBy])
             })
+
+        // Alternative to simulation ticks (stop simulation, run ticks, then update bees position)
         /*
           .transition()
           .duration(1000)
@@ -355,6 +356,9 @@ export default {
       this.draw();
     },
     sortBy() {
+      this.draw();
+    },
+    dotSize() {
       this.draw();
     }
   }

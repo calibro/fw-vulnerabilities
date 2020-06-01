@@ -5,6 +5,7 @@ import { BootstrapVue, IconsPlugin } from 'bootstrap-vue'
 import FWButton from './components/commons/FWButton.vue'
 import FWOptionSelect from './components/commons/FWOptionSelect.vue'
 import FWInput from './components/commons/FWInput.vue'
+import FWSlider from './components/commons/FWSlider.vue'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
@@ -17,6 +18,7 @@ Vue.use(IconsPlugin)
 Vue.component('fw-button', FWButton)
 Vue.component('fw-select', FWOptionSelect)
 Vue.component('fw-input', FWInput)
+Vue.component('fw-slider', FWSlider)
 
 Vue.config.productionTip = false
 

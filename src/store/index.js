@@ -13,6 +13,7 @@ export default new Vuex.Store({
     groupBy: "State",
     colorBy: "Priority",
     sortBy: "count",
+    dotSize: 5,
     slideTitle: "",
     slideSource: "",
     slideSize: "1920:1080",
@@ -32,6 +33,9 @@ export default new Vuex.Store({
     },
     setSortBy(state, val) {
       state.sortBy = val;
+    },
+    setDotSize(state, val) {
+      state.dotSize = +val;
     },
     setslideTitle(state, val) {
       state.slideTitle = val;
