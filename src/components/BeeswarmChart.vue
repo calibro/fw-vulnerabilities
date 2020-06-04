@@ -50,6 +50,7 @@ export default {
         .domain(new Set(csvData.map(e => e["Age"])))
         .range(["rgb(221,221,221)", "rgb(253, 137, 60)", "rgb(128, 0, 38)"]);
 
+      // TODO: Check issue with this scale
       let esposizioneScale = d3
         .scaleOrdinal()
         .domain(new Set(csvData.map(e => e["Fattore di Esposizione"])))
@@ -61,6 +62,11 @@ export default {
         "Age": ageScale,
         "Fattore di Esposizione": esposizioneScale
       };
+
+      this.simulation = d3.forceSimulation()
+          .force("x",d3.forceX().strength(1))
+          .force("y", d3.forceY())
+          .force("collide", d3.forceCollide().iterations(1))
 
       this.initialized = true;
     },
@@ -114,6 +120,12 @@ export default {
                 return a.key > b.key ? 1 : -1
               }
             })
+        // NOTE: very ugly fix - improve
+        this.filteredData.forEach(e => {
+          e.groupIndex = groups.findIndex(g=> g.key == e[this.groupBy]),
+          e.x= e.x ? e.x : vWidth/2,
+          e.y= e.y? e.y: vHeight/2
+        })
 
         // define single beswarm plot height, depending on the number of bar charts
         var w = +vWidth - margin.left - margin.right,
@@ -201,41 +213,22 @@ export default {
             .attr("x2", xScale(xMax) - margin.right)
             .attr("y2", h/2);
 
-        let data = []
+        /*let data = []
         groups.forEach((g, gIndex) => {
           data = data.concat(g.values.map(e => {
             return {
               ...e,
-              groupIndex: gIndex,
-              x: vWidth/2,
-              y: vHeight/2
+              groupIndex: gIndex
             }
           }))
-        })
-        
-        this.simulation = d3.forceSimulation(data)
-            .force("x",
-                d3.forceX(function(d) {
-                    return xScale(d['CVSS Score'])
-                })
-                .strength(1)
-            )
-            .force("y", d3.forceY(function(d) {
-                    return (h * d.groupIndex) + margin.top + h/2
-                }))
-            .force("collide", d3.forceCollide(function(d) {
-                //return radius(d.radius) + marginCircles()
-                return radius + marginCircles
-            }).iterations(anticollisionIterations)
-            )
-    
-        //.stop()
+        })*/
 
+        //.stop()
         //for (var i = 0; i < 240; ++i) simulation.tick();
 
         let bees = svg
               .selectAll(".bee")
-              .data(data, d => d.dataId)
+              .data(this.filteredData, d => d.dataId)
 
         let beesEnter = bees.enter()
             .append('circle')
@@ -248,16 +241,28 @@ export default {
 
         bees = bees.merge(beesEnter);
 
+        
         this.simulation
-        .nodes(data)
-        .on("tick", function(d){
-              bees
-                  .attr("cx", function(d){ return d.x; })
-                  .attr("cy", function(d){ return d.y; })
-            })
-        .alpha(1).restart()
-        //
+          .force("x")
+          .x(d => xScale(d['CVSS Score']))
+        
+        this.simulation
+          .force("y")
+          .y(d => (h * d.groupIndex) + margin.top + h/2)
+        
+        this.simulation
+          .force("collide")
+          .radius(radius + marginCircles)
 
+        this.simulation
+          .nodes(this.filteredData)
+          .on("tick", function(d){
+                bees
+                    .attr("cx", function(d){ return d.x; })
+                    .attr("cy", function(d){ return d.y; })
+              })
+          .alpha(1).restart()
+        //
 
         bees
           .attr('r', radius)
@@ -338,8 +343,6 @@ export default {
       let annHanldes = d3.selectAll('g.annotation')
       .select("circle.handle")
       annHanldes.remove();
-
-
     }
   },
   watch: {
