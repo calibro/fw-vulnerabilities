@@ -9,8 +9,8 @@
           label="Dot size"
           :value="dotSize"
           @input="setDotSize"
-          min=1
-          max=10
+          min="1"
+          max="10"
         ></fw-slider>
       </b-col>
       <b-col sm="2">
@@ -62,7 +62,7 @@ export default {
       colorOptions: [
         { value: "Priority", text: "Priority" },
         { value: "Age", text: "Age" },
-        { value: "Fattore di Esposizione", text: "Fattore di Esposizione" }
+        { value: "Fattore di esposizione", text: "Fattore di esposizione" }
       ],
       sortOptions: [
         { value: "count", text: "Count" },
