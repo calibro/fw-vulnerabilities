@@ -40,8 +40,6 @@ export default {
     init() {
       let csvData = this.csvData;
 
-      console.log(csvData[0]);
-
       let priorityScale = d3
         .scaleOrdinal()
         .domain(["Low", "Medium", "High"])
@@ -52,7 +50,6 @@ export default {
         .domain([0, d3.max(csvData, d => d["Age"])])
         .interpolator(d3.interpolateBlues);
 
-      // TODO: Check issue with this scale
       let esposizioneScale = d3
         .scaleSequential()
         .domain([0, d3.max(csvData, d => d["Fattore di esposizione"])])
@@ -77,13 +74,20 @@ export default {
       !this.initialized && this.init();
 
       let self = this;
-      let vHeight = this.height;
-      let vWidth = this.width;
+      // let vHeight = this.height;
+      // let vWidth = this.width;
+
+      const margin = {
+        top: 20,
+        right: 20,
+        bottom: 20,
+        left: 300
+      };
 
       const svg = d3
         .select(this.$refs.mainChart)
-        .attr("width", vWidth)
-        .attr("height", vHeight);
+        .attr("width", this.width)
+        .attr("height", this.height);
 
       if (this.filteredData.length == 0) {
         svg.selectAll("*").remove();
@@ -101,19 +105,10 @@ export default {
       } else {
         svg.selectAll(".no-data-text").remove();
 
-        //TODO implement transitions
-        //svg.selectAll("*").remove();
+        const chartWidth = this.width - margin.left - margin.right;
+        const chartHeight = this.height - margin.top - margin.bottom;
 
-        // Define margins
-        var margin = {
-          top: 25,
-          right: 25,
-          bottom: 0,
-          left: 25
-        };
-        var groupLabelWidth = 300;
-
-        var groups = d3
+        const groups = d3
           .nest()
           .key(d => d[this.groupBy])
           .entries(this.filteredData)
@@ -124,16 +119,17 @@ export default {
               return a.key > b.key ? 1 : -1;
             }
           });
+
         // NOTE: very ugly fix - improve
-        this.filteredData.forEach(e => {
-          (e.groupIndex = groups.findIndex(g => g.key == e[this.groupBy])),
-            (e.x = e.x ? e.x : vWidth / 2),
-            (e.y = e.y ? e.y : vHeight / 2);
-        });
+        // this.filteredData.forEach(e => {
+        //   (e.groupIndex = groups.findIndex(g => g.key == e[this.groupBy])),
+        //     (e.x = e.x ? e.x : vWidth / 2),
+        //     (e.y = e.y ? e.y : vHeight / 2);
+        // });
 
         // define single beswarm plot height, depending on the number of bar charts
-        var w = +vWidth - margin.left - margin.right,
-          h = (+vHeight - margin.bottom - margin.top) / groups.length;
+        // var w = +vWidth - margin.left - margin.right,
+        //   h = (+vHeight - margin.bottom - margin.top) / groups.length;
 
         var xScale = d3.scaleLinear();
 
@@ -152,7 +148,12 @@ export default {
         //     xMax = new Date(xMax)
         // }
 
-        xScale.range([groupLabelWidth, w]).domain([xMin, xMax]);
+        xScale.range([0, chartWidth]).domain([xMin, xMax]);
+
+        const yScale = d3
+          .scaleBand()
+          .rangeRound([0, chartHeight])
+          .domain(groups.map(d => d.key));
 
         // Spatialization iterations
         var anticollisionIterations = 1;
@@ -163,84 +164,171 @@ export default {
         var maxRadius = 20;
         var radius = this.dotSize;
 
-        // After all the charts, draw x axis
-        svg.selectAll("g.axis").remove();
+        let xAxisGroup = svg.select("#xAxisGroup");
 
-        svg
-          .append("g")
-          .attr("id", '"x-axis')
-          .attr("class", "x axis")
-          .style("font-size", "18px")
-          .style("font-family", "Arial, sans-serif")
-          .attr("transform", "translate(" + 0 + "," + margin.top + ")")
-          .call(d3.axisTop(xScale).tickSize(-vHeight));
+        if (xAxisGroup.empty()) {
+          xAxisGroup = svg
+            .append("g")
+            .attr("id", "xAxisGroup")
+            .attr(
+              "transform",
+              "translate(" + margin.left + "," + margin.top + ")"
+            );
+        }
 
-        // Set styles
-        d3.selectAll(".axis line, .axis path")
-          .style("shape-rendering", "crispEdges")
-          .style("fill", "none")
-          .style("stroke", "#ccc");
-
-        let beeswarm = svg.selectAll("g.beeswarm").data(groups, d => d.key);
-
-        let beeswarmEnter = beeswarm
-          .enter()
-          .append("g")
-          .attr("class", "beeswarm")
-          .attr("id", d =>
-            d.key === "undefined" ? "swarm" : "swarm-" + d.key
+        xAxisGroup.call(d3.axisTop(xScale).tickSize(-chartHeight)).call(g => {
+          g.select(".domain").attr(
+            "d",
+            d3.line()([
+              [-margin.left, 0],
+              [chartWidth, 0]
+            ])
           );
+        });
 
-        beeswarmEnter
-          .append("g")
-          .attr("id", "labels")
-          .attr("class", "label")
-          .style("font-size", "30px")
-          .append("text")
-          .attr("text-anchor", "start")
-          .attr("alignment-baseline", "middle")
-          .attr("fill", "#000")
-          .text(function(d) {
-            if (d.key) return d.key;
+        let yAxisGroup = svg.select("#yAxisGroup");
+
+        if (yAxisGroup.empty()) {
+          yAxisGroup = svg
+            .append("g")
+            .attr("id", "yAxisGroup")
+            .attr(
+              "transform",
+              "translate(" + margin.left + "," + margin.top + ")"
+            );
+        }
+
+        yAxisGroup.call(d3.axisLeft(yScale).tickSize(-chartWidth)).call(g => {
+          g.select(".domain").remove();
+          g.selectAll("text")
+            .attr("font-size", "16px")
+            .attr("x", -margin.left)
+            .attr("text-anchor", "start");
+        });
+
+        let yAxisHelperGroup = svg.select("#yAxisHelperGroup");
+
+        if (yAxisHelperGroup.empty()) {
+          yAxisHelperGroup = svg
+            .append("g")
+            .attr("id", "yAxisHelperGroup")
+            .attr(
+              "transform",
+              "translate(" +
+                (chartWidth + margin.left) +
+                "," +
+                (margin.top + yScale.bandwidth() / 2) +
+                ")"
+            );
+        }
+
+        yAxisHelperGroup
+          .attr(
+            "transform",
+            "translate(" +
+              (chartWidth + margin.left) +
+              "," +
+              (margin.top + yScale.bandwidth() / 2) +
+              ")"
+          )
+          .call(d3.axisRight(yScale).tickSize(-chartWidth - margin.left))
+          .call(g => {
+            g.selectAll("text").remove();
+            g.select(".domain").remove();
           });
 
-        beeswarmEnter
-          .append("line")
-          .attr("class", "group-bottom-line")
-          .style("stroke", "#ccc");
+        //beeswarm
 
-        beeswarmEnter
-          .append("line")
-          .attr("class", "group-middle-line")
-          .style("stroke", "#ccc");
+        let chartContainer = svg.select("#chartContainer");
 
-        beeswarm.exit().remove();
-        beeswarm = beeswarm.merge(beeswarmEnter);
+        if (chartContainer.empty()) {
+          chartContainer = svg
+            .append("g")
+            .attr("id", "chartContainer")
+            .attr(
+              "transform",
+              "translate(" + margin.left + "," + margin.top + ")"
+            );
+        }
+        //
+        // const grid = chartContainer
+        //   .selectAll("g.grid")
+        //   .data(yScale.domain())
+        //   .join("g")
+        //   .attr("class", "grid")
+        //   .selectAll("line")
+        //   .data(d => [
+        //     { key: d, pos: "top" },
+        //     { key: d, pos: "bottom" }
+        //   ])
+        //   .join("line")
+        //   .attr("x1", -margin.left)
+        //   .attr("y1", d => yScale(d.key) + yScale.bandwidth())
+        //   .attr("x2", chartWidth)
+        //   .attr("y2", d => yScale(d.key) + yScale.bandwidth())
+        //   .attr("stroke", "black");
 
-        beeswarm.attr(
-          "transform",
-          (d, i) =>
-            "translate(" + margin.left + "," + (margin.top + i * h) + ")"
-        );
+        // let beeswarm = chartContainer
+        //   .selectAll("g.beeswarm")
+        //   .data(groups, d => d.key);
+        //
+        // let beeswarmEnter = beeswarm
+        //   .enter()
+        //   .append("g")
+        //   .attr("class", "beeswarm")
+        //   .attr("id", d =>
+        //     d.key === "undefined" ? "swarm" : "swarm-" + d.key
+        //   );
 
-        beeswarm
-          .selectAll(".label text")
-          .attr("x", margin.left)
-          .attr("y", h / 2);
+        // beeswarmEnter
+        //   .append("g")
+        //   .attr("id", "labels")
+        //   .attr("class", "label")
+        //   .style("font-size", "30px")
+        //   .append("text")
+        //   .attr("text-anchor", "start")
+        //   .attr("alignment-baseline", "middle")
+        //   .attr("fill", "#000")
+        //   .text(function(d) {
+        //     if (d.key) return d.key;
+        //   });
 
-        beeswarm
-          .selectAll(".group-bottom-line")
-          .attr("x1", margin.left)
-          .attr("y1", h)
-          .attr("x2", w - margin.right)
-          .attr("y2", h);
+        // beeswarmEnter
+        //   .append("line")
+        //   .attr("class", "group-bottom-line")
+        //   .style("stroke", "#ccc");
+        //
+        // beeswarmEnter
+        //   .append("line")
+        //   .attr("class", "group-middle-line")
+        //   .style("stroke", "#ccc");
 
-        beeswarm
-          .selectAll(".group-middle-line")
-          .attr("x1", xScale(xMin) - margin.right)
-          .attr("y1", h / 2)
-          .attr("x2", xScale(xMax) - margin.right)
-          .attr("y2", h / 2);
+        // beeswarm.exit().remove();
+        // beeswarm = beeswarm.merge(beeswarmEnter);
+        //
+        // beeswarm.attr(
+        //   "transform",
+        //   (d, i) => "translate(" + margin.left + "," + yScale(d.key) + ")"
+        // );
+
+        // beeswarm
+        //   .selectAll(".label text")
+        //   .attr("x", margin.left)
+        //   .attr("y", h / 2);
+        //
+        // beeswarm
+        //   .selectAll(".group-bottom-line")
+        //   .attr("x1", margin.left)
+        //   .attr("y1", h)
+        //   .attr("x2", w - margin.right)
+        //   .attr("y2", h);
+        //
+        // beeswarm
+        //   .selectAll(".group-middle-line")
+        //   .attr("x1", xScale(xMin) - margin.right)
+        //   .attr("y1", h / 2)
+        //   .attr("x2", xScale(xMax) - margin.right)
+        //   .attr("y2", h / 2);
 
         /*let data = []
         groups.forEach((g, gIndex) => {
@@ -255,7 +343,9 @@ export default {
         //.stop()
         //for (var i = 0; i < 240; ++i) simulation.tick();
 
-        let bees = svg.selectAll(".bee").data(this.filteredData, d => d.dataId);
+        let bees = chartContainer
+          .selectAll(".bee")
+          .data(this.filteredData, d => d.dataId);
 
         let beesEnter = bees
           .enter()
@@ -269,11 +359,15 @@ export default {
 
         bees = bees.merge(beesEnter);
 
+        bees.attr("r", radius).attr("fill", function(d) {
+          return self.colorScales[self.colorBy](d[self.colorBy]);
+        });
+
         this.simulation.force("x").x(d => xScale(d["CVSS Score"]));
 
-        this.simulation
-          .force("y")
-          .y(d => h * d.groupIndex + margin.top + h / 2);
+        this.simulation.force("y").y(d => {
+          return yScale(d[this.groupBy]) + yScale.bandwidth() / 2;
+        });
 
         this.simulation.force("collide").radius(radius + marginCircles);
 
@@ -290,11 +384,6 @@ export default {
           })
           .alpha(1)
           .restart();
-        //
-
-        bees.attr("r", radius).attr("fill", function(d) {
-          return self.colorScales[self.colorBy](d[self.colorBy]);
-        });
 
         // Alternative to simulation ticks (stop simulation, run ticks, then update bees position)
         /*
