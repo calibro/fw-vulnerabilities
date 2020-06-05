@@ -163,6 +163,24 @@ export default {
         var maxRadius = 20;
         var radius = this.dotSize;
 
+        // After all the charts, draw x axis
+        svg.selectAll("g.axis").remove();
+
+        svg
+          .append("g")
+          .attr("id", '"x-axis')
+          .attr("class", "x axis")
+          .style("font-size", "18px")
+          .style("font-family", "Arial, Helvetica")
+          .attr("transform", "translate(" + 0 + "," + margin.top + ")")
+          .call(d3.axisTop(xScale).tickSize(-vHeight));
+
+        // Set styles
+        d3.selectAll(".axis line, .axis path")
+          .style("shape-rendering", "crispEdges")
+          .style("fill", "none")
+          .style("stroke", "#ccc");
+
         let beeswarm = svg.selectAll("g.beeswarm").data(groups, d => d.key);
 
         let beeswarmEnter = beeswarm
@@ -285,24 +303,6 @@ export default {
           .attr('cx', d => d.x)
           .attr('cy', d => d.y)
         */
-
-        // After all the charts, draw x axis
-        svg.selectAll("g.axis").remove();
-
-        svg
-          .append("g")
-          .attr("id", '"x-axis')
-          .attr("class", "x axis")
-          .style("font-size", "18px")
-          .style("font-family", "Arial, Helvetica")
-          .attr("transform", "translate(" + 0 + "," + margin.top + ")")
-          .call(d3.axisTop(xScale).tickSize(-vHeight));
-
-        // Set styles
-        d3.selectAll(".axis line, .axis path")
-          .style("shape-rendering", "crispEdges")
-          .style("fill", "none")
-          .style("stroke", "#ccc");
 
         //this.scaleToFit(minX, maxX, minY, maxY);
       }
