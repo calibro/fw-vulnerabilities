@@ -171,7 +171,7 @@ export default {
           .attr("id", '"x-axis')
           .attr("class", "x axis")
           .style("font-size", "18px")
-          .style("font-family", "Arial, Helvetica")
+          .style("font-family", "Arial, sans-serif")
           .attr("transform", "translate(" + 0 + "," + margin.top + ")")
           .call(d3.axisTop(xScale).tickSize(-vHeight));
 
