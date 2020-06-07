@@ -208,7 +208,8 @@ export default {
           g.selectAll("text")
             .attr("font-size", "16px")
             .attr("x", -margin.left)
-            .attr("text-anchor", "start");
+            .attr("text-anchor", "start")
+            .text(d => d + ` (${groups.find(g => g.key == d).values.length})`);
         });
 
         let yAxisHelperGroup = svg.select("#yAxisHelperGroup");

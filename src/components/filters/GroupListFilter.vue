@@ -20,7 +20,7 @@
         class="item-checkbox"
         @click="toggleValue(item.id)"
         />
-        {{item.label}} ({{item.count}})
+        {{item.label}}
       </div>
     </div>
   </div>
@@ -48,8 +48,6 @@ export default {
               return {
                 id: key,
                 label: 'Application ' + key,
-                // Should we count the original dataset or the filtered one?
-                count: allData.filter(e => e[this.filterKey] == key).length
               }
             })
     },
