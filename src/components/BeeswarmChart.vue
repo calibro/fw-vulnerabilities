@@ -68,6 +68,8 @@ export default {
         .force("y", d3.forceY())
         .force("collide", d3.forceCollide().iterations(1));
 
+      this.annotations = []
+      
       this.initialized = true;
     },
     draw() {
@@ -352,10 +354,18 @@ export default {
           .append("circle")
           .attr("class", "bee")
           .on("click", function(d) {
-            self.addAnnotation(d, this);
+            self.toggleAnnotation(d, this);
           });
 
+        bees.exit().each((exitItem) => {
+          let annIndex = self.annotations.findIndex(ann => ann.annotations().find(n => n.data.dataId == exitItem.dataId))
+          if(annIndex >= 0) {
+            self.annotations.splice(annIndex, 1)
+            d3.select("#annotation-" + exitItem.dataId).remove()
+          }
+        })
         bees.exit().remove();
+
 
         bees = bees.merge(beesEnter);
 
@@ -381,6 +391,14 @@ export default {
               .attr("cy", function(d) {
                 return d.y;
               });
+            self.annotations
+              .forEach((ann) => {
+                ann.annotations().forEach(d => {
+                  d.x = d.data.x
+                  d.y = d.data.y
+                  //TODO: here update dx/dy to avoid note move out of screen
+                })
+              })
           })
           .alpha(1)
           .restart();
@@ -405,12 +423,13 @@ export default {
           labelSize * 2}`
       );
     },
-    addAnnotation(item, node) {
-      //TODO: Update annotation with nodes
-      const type = d3Annotation.annotationCallout;
-
-      const annotations = [
-        {
+    toggleAnnotation(item, node) {
+      let annIndex = this.annotations.findIndex(ann => ann.annotations().find(n => n.data.dataId == item.dataId))
+      if (annIndex >= 0) {
+        this.annotations.splice(annIndex, 1)
+        d3.select(node.parentNode).select("#annotation-" + item.dataId).remove()
+      } else {
+        let newAnn = {
           note: {
             title: item["Vulnerability"] || item["Code"],
             label: item["CVSS Score"],
@@ -420,27 +439,33 @@ export default {
           data: item,
           className: "show-bg",
           dx: item.x > this.width / 2 ? -50 : 50,
-          dy: 100
+          dy: item.y > this.height / 2 ? -100 : 100
         }
-      ];
 
-      let makeAnnotations = d3Annotation
-        .annotation()
-        .editMode(true)
-        .notePadding(15)
-        .type(type)
-        .annotations(annotations)
-        .accessors({ x: d => d.x, y: d => d.y });
+        const type = d3Annotation.annotationCallout;
+        // Make a function for each note, otherwise user's positioning would be lost at each "update"
+        let makeAnnotations = d3Annotation
+          .annotation()
+          .editMode(true)
+          .notePadding(15)
+          .type(type)
+          .annotations([newAnn])
+          .accessors({ x: d => d.x, y: d => d.y });
 
-      d3.select(node.parentNode)
-        .append("g")
+
+        d3.select(node.parentNode).append("g")
         .attr("class", "annotation-group")
-        .call(makeAnnotations);
+        .attr("id", "annotation-" + item.dataId)
+        .call(makeAnnotations)
 
-      // Remove draggable handle on the note target
-      let annHanldes = d3.selectAll("g.annotation").select("circle.handle");
-      annHanldes.remove();
+        this.annotations.push(makeAnnotations)
+
+        // Remove draggable handle on the note target
+        let annHanldes = d3.selectAll("g.annotation").select("circle.handle");
+        annHanldes.remove();
+      }
     }
+
   },
   watch: {
     filteredData() {
