@@ -150,7 +150,10 @@ export default {
         //     xMax = new Date(xMax)
         // }
 
-        xScale.range([0, chartWidth]).domain([xMin, xMax]);
+        let cvssRange = this.$store.state.data.filters['CVSS Score']
+        //xScale.range([0, chartWidth]).domain([xMin, xMax]);
+        // Use CVSS range based on filter values
+        xScale.range([0, chartWidth]).domain(cvssRange);
 
         const yScale = d3
           .scaleBand()
