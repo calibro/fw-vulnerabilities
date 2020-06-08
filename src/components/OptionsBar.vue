@@ -1,26 +1,8 @@
 <template>
   <b-container class="options-bar">
     <b-row>
-      <b-col sm="4">
+      <b-col sm="2">
         <data-selector></data-selector>
-      </b-col>
-      <b-col sm="2">
-        <fw-slider
-          label="Dot size"
-          :value="dotSize"
-          @input="setDotSize"
-          min="1"
-          max="10"
-        ></fw-slider>
-      </b-col>
-      <b-col sm="2">
-        <fw-select
-          label="Sort by"
-          :value="sortBy"
-          @change="setSortBy"
-          :options="sortOptions"
-        >
-        </fw-select>
       </b-col>
       <b-col sm="2">
         <fw-select
@@ -33,11 +15,29 @@
       </b-col>
       <b-col sm="2">
         <fw-select
+          label="Sort by"
+          :value="sortBy"
+          @change="setSortBy"
+          :options="sortOptions"
+        >
+        </fw-select>
+      </b-col>
+      <b-col sm="2">
+        <fw-select
           label="Color by"
           :value="colorBy"
           @change="setColorBy"
           :options="colorOptions"
         ></fw-select>
+      </b-col>
+      <b-col sm="2">
+        <fw-slider
+          label="Dot size"
+          :value="dotSize"
+          @input="setDotSize"
+          min="1"
+          max="10"
+        ></fw-slider>
       </b-col>
     </b-row>
   </b-container>

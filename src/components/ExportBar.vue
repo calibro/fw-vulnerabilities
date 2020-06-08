@@ -40,14 +40,14 @@
           :options="slideSizeOptions"
         ></fw-select>
       </b-col>
-      <b-col>
+      <!-- <b-col>
         <fw-input
           label="Source"
           :value="slideSource"
           @input="setSlideSource"
           placeholder="additional information"
         ></fw-input>
-      </b-col>
+      </b-col> -->
     </b-row>
   </b-container>
 </template>

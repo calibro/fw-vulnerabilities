@@ -33,7 +33,6 @@
           </div>
           <b-collapse
             id="accordion-1"
-            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -55,7 +54,7 @@
           </div>
           <b-collapse
             id="accordion-2"
-            visible
+
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -77,7 +76,7 @@
           </div>
           <b-collapse
             id="accordion-3"
-            visible
+
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -101,7 +100,7 @@
           </div>
           <b-collapse
             id="accordion-4"
-            visible
+
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -123,7 +122,7 @@
           </div>
           <b-collapse
             id="accordion-5"
-            visible
+
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -145,7 +144,7 @@
           </div>
           <b-collapse
             id="accordion-6"
-            visible
+
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -167,7 +166,7 @@
           </div>
           <b-collapse
             id="accordion-7"
-            visible
+
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -190,7 +189,7 @@
           </div>
           <b-collapse
             id="accordion-8"
-            visible
+            
             accordion="filter-accordion"
             role="tabpanel"
           >

@@ -4,12 +4,12 @@
       {{ dataError }}
     </b-alert>
     <div class="data-selector-line">
-      <div class="upload-button-container align-self-center">
+      <div class="upload-button-container align-self-center w-100">
         <div class="upload-file-name" v-if="selectedFile">
           {{ selectedFile.name }}
         </div>
 
-        <fw-button class="upload-button" @click="openSelectFile">
+        <fw-button class="upload-button btn-block" @click="openSelectFile">
           Upload .csv
           <input
             type="file"
@@ -29,8 +29,7 @@ import { mapState, mapGetters, mapMutations } from "vuex";
 
 export default {
   name: "DataSelector",
-  mounted() {
-  },
+  mounted() {},
   computed: {
     ...mapState({
       remoteFileList: state => state.remoteFileList,
@@ -68,7 +67,6 @@ export default {
     align-items: flex-end
   .upload-button
     max-height 35px
-    min-width 180px
   .upload-file-name
     max-width 180px
     white-space nowrap
