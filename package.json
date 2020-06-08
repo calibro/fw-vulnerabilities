@@ -53,5 +53,9 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
-  ]
+  ],
+  "resolutions": {
+    "d3-selection": "^1.4.0",
+    "d3-drag": "^1.2.3"
+  }
 }

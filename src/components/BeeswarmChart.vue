@@ -12,6 +12,7 @@
 <script>
 import d3Annotation from "d3-svg-annotation";
 import * as d3 from "d3";
+import * as d3array from "d3-array";
 import d3Legend from "d3-svg-legend";
 import { mapState, mapGetters, mapMutations } from "vuex";
 import tippy from "tippy.js";
@@ -67,8 +68,8 @@ export default {
         .force("y", d3.forceY())
         .force("collide", d3.forceCollide().iterations(1));
 
-      this.annotations = []
-      
+      this.annotations = [];
+
       this.initialized = true;
     },
     draw() {
@@ -79,7 +80,7 @@ export default {
       // let vWidth = this.width;
 
       const margin = {
-        top: 20,
+        top: 40,
         right: 20,
         bottom: 20,
         left: 300
@@ -109,17 +110,21 @@ export default {
         const chartWidth = this.width - margin.left - margin.right;
         const chartHeight = this.height - margin.top - margin.bottom;
 
-        const groups = d3
-          .nest()
-          .key(d => d[this.groupBy])
-          .entries(this.filteredData)
-          .sort((a, b) => {
-            if (self.sortBy == "count") {
-              return a.values.length > b.values.length ? -1 : 1;
+        const rollup = d3array.rollup(
+          this.filteredData,
+          v => v.length,
+          d => d[this.groupBy]
+        );
+
+        const groups = new Map(
+          [...rollup].sort((a, b) => {
+            if (self.sortBy === "count") {
+              return d3.descending(a[1], b[1]);
             } else {
-              return a.key > b.key ? 1 : -1;
+              return d3.ascending(a[0], b[0]);
             }
-          });
+          })
+        );
 
         // NOTE: very ugly fix - improve
         // this.filteredData.forEach(e => {
@@ -128,45 +133,36 @@ export default {
         //     (e.y = e.y ? e.y : vHeight / 2);
         // });
 
-        // define single beswarm plot height, depending on the number of bar charts
-        // var w = +vWidth - margin.left - margin.right,
-        //   h = (+vHeight - margin.bottom - margin.top) / groups.length;
-
-        var xScale = d3.scaleLinear();
-
-        let xMax = d3.max(groups, function(d) {
-          return d3.max(d.values, function(e) {
-            return e["CVSS Score"];
-          });
-        });
-        let xMin = d3.min(groups, function(d) {
-          return d3.min(d.values, function(e) {
-            return e["CVSS Score"];
-          });
-        });
-        // if (values.type() == 'Date') {
-        //     xMin = new Date(xMin);
-        //     xMax = new Date(xMax)
-        // }
-
-        let cvssRange = this.$store.state.data.filters['CVSS Score']
-        //xScale.range([0, chartWidth]).domain([xMin, xMax]);
+        let cvssRange = this.$store.state.data.filters["CVSS Score"];
         // Use CVSS range based on filter values
-        xScale.range([0, chartWidth]).domain(cvssRange);
+        const xScale = d3
+          .scaleLinear()
+          .range([0, chartWidth])
+          .domain(cvssRange);
+
+        // const xScaleHelper = d3
+        //   .scaleOrdinal()
+        //   .range([xScale(2), xScale(5.5), xScale(8.5)])
+        //   .domain(["low", "medium", "high"]);
+
+        const xScaleHelper = d3
+          .scaleThreshold()
+          .domain([0, 4, 7, 10])
+          .range(["", "low", "medium", "high", ""]);
 
         const yScale = d3
           .scaleBand()
           .rangeRound([0, chartHeight])
-          .domain(groups.map(d => d.key));
+          .domain([...groups.keys()]);
 
         // Spatialization iterations
-        var anticollisionIterations = 1;
-        var marginCircles = 1;
+        const anticollisionIterations = 1;
+        const marginCircles = 1;
         // Space between barcharts
-        var padding = 10;
-        var minRadius = 2;
-        var maxRadius = 20;
-        var radius = this.dotSize;
+        const padding = 10;
+        const minRadius = 2;
+        const maxRadius = 20;
+        const radius = this.dotSize;
 
         let xAxisGroup = svg.select("#xAxisGroup");
 
@@ -180,15 +176,63 @@ export default {
             );
         }
 
-        xAxisGroup.call(d3.axisTop(xScale).tickSize(-chartHeight)).call(g => {
-          g.select(".domain").attr(
-            "d",
-            d3.line()([
-              [-margin.left, 0],
-              [chartWidth, 0]
-            ])
-          );
-        });
+        xAxisGroup
+          .call(
+            d3
+              .axisTop(xScale)
+              .tickSize(-chartHeight)
+              .tickPadding(5)
+          )
+          .call(g => {
+            g.select(".domain").attr(
+              "d",
+              d3.line()([
+                [-margin.left, 0],
+                [chartWidth, 0]
+              ])
+            );
+            g.selectAll("text")
+              .attr("font-size", "16px")
+              .attr("font-family", "Arial, sans-serif")
+              .attr("font-weight", "bold");
+
+            g.selectAll(".domain, .tick line").attr("stroke", "#000");
+          });
+
+        let xAxisHelperGroup = svg.select("#xAxisHelperGroup");
+
+        if (xAxisHelperGroup.empty()) {
+          xAxisHelperGroup = svg
+            .append("g")
+            .attr("id", "xAxisHelperGroup")
+            .attr(
+              "transform",
+              "translate(" + margin.left + "," + margin.top / 4 + ")"
+            );
+        }
+
+        xAxisHelperGroup
+          .call(
+            d3
+              .axisBottom(xScale)
+              .tickValues(xScaleHelper.domain())
+              .tickFormat(d => xScaleHelper(d))
+          )
+          .call(g => {
+            g.selectAll("text")
+              .attr("font-size", "16px")
+              .attr("font-family", "Arial, sans-serif")
+              .attr("font-weight", "bold")
+              .attr("text-anchor", "start")
+              .attr("transform", "translate(10,-16)")
+              .attr("paint-order", "stroke")
+              .attr("stroke", "#fff")
+              .attr("stroke-width", "10px")
+              .attr("stroke-linecap", "round")
+              .attr("stroke-linejoin", "round");
+
+            g.selectAll(".domain, .tick line").attr("stroke", "#ddd");
+          });
 
         let yAxisGroup = svg.select("#yAxisGroup");
 
@@ -210,7 +254,9 @@ export default {
             .attr("font-weight", "bold")
             .attr("x", -margin.left)
             .attr("text-anchor", "start")
-            .text(d => d + ` (${groups.find(g => g.key == d).values.length})`);
+            .text(d => d + ` (${groups.get(d)})`);
+
+          g.selectAll(".domain, .tick line").attr("stroke", "#ddd");
         });
 
         let yAxisHelperGroup = svg.select("#yAxisHelperGroup");
@@ -242,6 +288,7 @@ export default {
           .call(g => {
             g.selectAll("text").remove();
             g.select(".domain").remove();
+            g.selectAll(".domain, .tick line").attr("stroke", "#000");
           });
 
         //beeswarm
@@ -257,98 +304,6 @@ export default {
               "translate(" + margin.left + "," + margin.top + ")"
             );
         }
-        //
-        // const grid = chartContainer
-        //   .selectAll("g.grid")
-        //   .data(yScale.domain())
-        //   .join("g")
-        //   .attr("class", "grid")
-        //   .selectAll("line")
-        //   .data(d => [
-        //     { key: d, pos: "top" },
-        //     { key: d, pos: "bottom" }
-        //   ])
-        //   .join("line")
-        //   .attr("x1", -margin.left)
-        //   .attr("y1", d => yScale(d.key) + yScale.bandwidth())
-        //   .attr("x2", chartWidth)
-        //   .attr("y2", d => yScale(d.key) + yScale.bandwidth())
-        //   .attr("stroke", "black");
-
-        // let beeswarm = chartContainer
-        //   .selectAll("g.beeswarm")
-        //   .data(groups, d => d.key);
-        //
-        // let beeswarmEnter = beeswarm
-        //   .enter()
-        //   .append("g")
-        //   .attr("class", "beeswarm")
-        //   .attr("id", d =>
-        //     d.key === "undefined" ? "swarm" : "swarm-" + d.key
-        //   );
-
-        // beeswarmEnter
-        //   .append("g")
-        //   .attr("id", "labels")
-        //   .attr("class", "label")
-        //   .style("font-size", "30px")
-        //   .append("text")
-        //   .attr("text-anchor", "start")
-        //   .attr("alignment-baseline", "middle")
-        //   .attr("fill", "#000")
-        //   .text(function(d) {
-        //     if (d.key) return d.key;
-        //   });
-
-        // beeswarmEnter
-        //   .append("line")
-        //   .attr("class", "group-bottom-line")
-        //   .style("stroke", "#ccc");
-        //
-        // beeswarmEnter
-        //   .append("line")
-        //   .attr("class", "group-middle-line")
-        //   .style("stroke", "#ccc");
-
-        // beeswarm.exit().remove();
-        // beeswarm = beeswarm.merge(beeswarmEnter);
-        //
-        // beeswarm.attr(
-        //   "transform",
-        //   (d, i) => "translate(" + margin.left + "," + yScale(d.key) + ")"
-        // );
-
-        // beeswarm
-        //   .selectAll(".label text")
-        //   .attr("x", margin.left)
-        //   .attr("y", h / 2);
-        //
-        // beeswarm
-        //   .selectAll(".group-bottom-line")
-        //   .attr("x1", margin.left)
-        //   .attr("y1", h)
-        //   .attr("x2", w - margin.right)
-        //   .attr("y2", h);
-        //
-        // beeswarm
-        //   .selectAll(".group-middle-line")
-        //   .attr("x1", xScale(xMin) - margin.right)
-        //   .attr("y1", h / 2)
-        //   .attr("x2", xScale(xMax) - margin.right)
-        //   .attr("y2", h / 2);
-
-        /*let data = []
-        groups.forEach((g, gIndex) => {
-          data = data.concat(g.values.map(e => {
-            return {
-              ...e,
-              groupIndex: gIndex
-            }
-          }))
-        })*/
-
-        //.stop()
-        //for (var i = 0; i < 240; ++i) simulation.tick();
 
         let bees = chartContainer
           .selectAll(".bee")
@@ -362,15 +317,16 @@ export default {
             self.toggleAnnotation(d, this);
           });
 
-        bees.exit().each((exitItem) => {
-          let annIndex = self.annotations.findIndex(ann => ann.annotations().find(n => n.data.dataId == exitItem.dataId))
-          if(annIndex >= 0) {
-            self.annotations.splice(annIndex, 1)
-            d3.select("#annotation-" + exitItem.dataId).remove()
+        bees.exit().each(exitItem => {
+          let annIndex = self.annotations.findIndex(ann =>
+            ann.annotations().find(n => n.data.dataId == exitItem.dataId)
+          );
+          if (annIndex >= 0) {
+            self.annotations.splice(annIndex, 1);
+            d3.select("#annotation-" + exitItem.dataId).remove();
           }
-        })
+        });
         bees.exit().remove();
-
 
         bees = bees.merge(beesEnter);
 
@@ -396,25 +352,16 @@ export default {
               .attr("cy", function(d) {
                 return d.y;
               });
-            self.annotations
-              .forEach((ann) => {
-                ann.annotations().forEach(d => {
-                  d.x = d.data.x
-                  d.y = d.data.y
-                  //TODO: here update dx/dy to avoid note move out of screen
-                })
-              })
+            self.annotations.forEach(ann => {
+              ann.annotations().forEach(d => {
+                d.x = d.data.x;
+                d.y = d.data.y;
+                //TODO: here update dx/dy to avoid note move out of screen
+              });
+            });
           })
           .alpha(1)
           .restart();
-
-        // Alternative to simulation ticks (stop simulation, run ticks, then update bees position)
-        /*
-          .transition()
-          .duration(1000)
-          .attr('cx', d => d.x)
-          .attr('cy', d => d.y)
-        */
 
         //this.scaleToFit(minX, maxX, minY, maxY);
       }
@@ -429,10 +376,14 @@ export default {
       );
     },
     toggleAnnotation(item, node) {
-      let annIndex = this.annotations.findIndex(ann => ann.annotations().find(n => n.data.dataId == item.dataId))
+      let annIndex = this.annotations.findIndex(ann =>
+        ann.annotations().find(n => n.data.dataId == item.dataId)
+      );
       if (annIndex >= 0) {
-        this.annotations.splice(annIndex, 1)
-        d3.select(node.parentNode).select("#annotation-" + item.dataId).remove()
+        this.annotations.splice(annIndex, 1);
+        d3.select(node.parentNode)
+          .select("#annotation-" + item.dataId)
+          .remove();
       } else {
         let newAnn = {
           note: {
@@ -445,7 +396,7 @@ export default {
           className: "show-bg",
           dx: item.x > this.width / 2 ? -50 : 50,
           dy: item.y > this.height / 2 ? -100 : 100
-        }
+        };
 
         const type = d3Annotation.annotationCallout;
         // Make a function for each note, otherwise user's positioning would be lost at each "update"
@@ -457,20 +408,19 @@ export default {
           .annotations([newAnn])
           .accessors({ x: d => d.x, y: d => d.y });
 
+        d3.select(node.parentNode)
+          .append("g")
+          .attr("class", "annotation-group")
+          .attr("id", "annotation-" + item.dataId)
+          .call(makeAnnotations);
 
-        d3.select(node.parentNode).append("g")
-        .attr("class", "annotation-group")
-        .attr("id", "annotation-" + item.dataId)
-        .call(makeAnnotations)
-
-        this.annotations.push(makeAnnotations)
+        this.annotations.push(makeAnnotations);
 
         // Remove draggable handle on the note target
         let annHanldes = d3.selectAll("g.annotation").select("circle.handle");
         annHanldes.remove();
       }
     }
-
   },
   watch: {
     filteredData() {
