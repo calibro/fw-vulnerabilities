@@ -196,7 +196,7 @@ export default {
               .attr("font-family", "Arial, sans-serif")
               .attr("font-weight", "bold");
 
-            g.selectAll(".domain, .tick line").attr("stroke", "#000");
+            g.selectAll(".domain, .tick line").attr("stroke", "grey");
           });
 
         let xAxisHelperGroup = svg.select("#xAxisHelperGroup");
@@ -288,7 +288,7 @@ export default {
           .call(g => {
             g.selectAll("text").remove();
             g.select(".domain").remove();
-            g.selectAll(".domain, .tick line").attr("stroke", "#000");
+            g.selectAll(".domain, .tick line").attr("stroke", "grey");
           });
 
         //beeswarm
@@ -454,4 +454,8 @@ svg
     fill: #aaa
 .node-label
   pointer-events: none
+.bee
+  cursor:pointer
+.bee:hover
+  stroke:black
 </style>
