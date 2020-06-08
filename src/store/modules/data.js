@@ -20,11 +20,13 @@ const filterCols = [
   },
   {
     key: "Priority",
-    type: 'checkbox'
+    type: 'checkbox',
+    order: ["Low", "Medium", "High"]
   },
   {
     key: "State",
-    type: 'checkbox'
+    type: 'checkbox',
+    order: ["In Review", "Remediation", "Closed"]
   },
   {
     key: "Close Code",
@@ -139,9 +141,12 @@ export default {
             } else {
               cVals = [...new Set(data.map(x => x[filterCol.key]))]
             }
-            fOptions = cVals.filter(e => e).sort(
-              (a, b) => a - b
-            )
+            fOptions = cVals.filter(e => e).sort((a, b) =>{
+                if(filterCol.order) {
+                  return filterCol.order.indexOf(a) - filterCol.order.indexOf(b)
+                }
+                return a - b
+            })
           }
           else if (filterCol.type == 'range'){
             let rangeVals = data.map(x => parseFloat(x[filterCol.key]));
