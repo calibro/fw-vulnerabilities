@@ -57,8 +57,7 @@ export default {
     BeeswarmChart
   },
   mounted() {
-    this.$store.dispatch("data/loadTestData");
-    //this.resize();
+    this.resize();
   },
   computed: {
     ...mapState({

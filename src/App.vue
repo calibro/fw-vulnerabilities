@@ -33,7 +33,7 @@
       </div>
     </div>
     <div v-else class="load-data-ui">
-      <data-selector></data-selector>
+      <data-selector></data-selector> or <span @click="loadTestData" class="data-link">use test data</span>
     </div>
   </div>
 </template>
@@ -57,9 +57,9 @@ export default {
   },
   computed: {
     showApp() {
-      return true /*(
+      return (
         !this.$store.state.data.firstLoad || this.$store.state.data.fetchingData
-      );*/
+      );
     }
   },
   methods: {
@@ -68,6 +68,9 @@ export default {
     },
     onResize() {
       this.$refs.slide.resize();
+    },
+    loadTestData() {
+      this.$store.dispatch("data/loadTestData");
     }
   },
   directives: {
@@ -111,7 +114,12 @@ body
     justify-content center
     align-items center
     background-color: #F2F2F2
-
+    .data-selector
+      margin-right 5px
+  .data-link
+    text-decoration underline
+    margin-left 5px
+    cursor pointer
   .options-bar-container
     border-bottom 1px solid #ccc
     padding: 15px 0
