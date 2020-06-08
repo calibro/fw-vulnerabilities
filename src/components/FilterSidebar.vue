@@ -29,10 +29,13 @@
             v-b-toggle.accordion-1
             role="tab"
           >
-            Real target<b-icon-chevron-up class="caret"></b-icon-chevron-up>
+            Real target
+            <span class="active-filter-marker" v-if="isFilterActive('Real Target')"></span>
+            <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-1"
+            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -50,11 +53,13 @@
             v-b-toggle.accordion-2
             role="tab"
           >
-            CVSS Score<b-icon-chevron-up class="caret"></b-icon-chevron-up>
+            CVSS Score
+            <span class="active-filter-marker" v-if="isFilterActive('CVSS Score')"></span>
+            <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-2"
-
+            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -72,11 +77,13 @@
             v-b-toggle.accordion-3
             role="tab"
           >
-            Priority<b-icon-chevron-up class="caret"></b-icon-chevron-up>
+            Priority
+            <span class="active-filter-marker" v-if="isFilterActive('Priority')"></span>
+            <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-3"
-
+            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -94,13 +101,15 @@
             v-b-toggle.accordion-4
             role="tab"
           >
-            State<b-icon-chevron-up
+            State
+            <span class="active-filter-marker" v-if="isFilterActive('State')"></span>
+            <b-icon-chevron-up
               class="caret"
             ></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-4"
-
+            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -118,11 +127,13 @@
             v-b-toggle.accordion-5
             role="tab"
           >
-            Close Code<b-icon-chevron-up class="caret"></b-icon-chevron-up>
+            Close Code
+            <span class="active-filter-marker" v-if="isFilterActive('Close Code')"></span>
+            <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-5"
-
+            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -140,11 +151,13 @@
             v-b-toggle.accordion-6
             role="tab"
           >
-            Team Aziendale<b-icon-chevron-up class="caret"></b-icon-chevron-up>
+            Team Aziendale
+            <span class="active-filter-marker" v-if="isFilterActive('Team Aziendale')"></span>
+            <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-6"
-
+            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -162,11 +175,13 @@
             v-b-toggle.accordion-7
             role="tab"
           >
-            Year<b-icon-chevron-up class="caret"></b-icon-chevron-up>
+            Year
+            <span class="active-filter-marker" v-if="isFilterActive('Year')"></span>
+            <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-7"
-
+            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -178,32 +193,33 @@
             </div>
           </b-collapse>
         </div>
-      </div>
-      <div class="filter-block">
-          <div
-            class="filter-according-toggle"
-            v-b-toggle.accordion-8
-            role="tab"
-          >
-            Esposizione<b-icon-chevron-up class="caret"></b-icon-chevron-up>
-          </div>
-          <b-collapse
-            id="accordion-8"
-            
-            accordion="filter-accordion"
-            role="tabpanel"
-          >
-            <div class="filter-body">
-              <checkbox-filter
-                filterKey="Esposizione"
-                @change="onChangeFilter"
-              ></checkbox-filter>
+        <div class="filter-block">
+            <div
+              class="filter-according-toggle"
+              v-b-toggle.accordion-8
+              role="tab"
+            >
+              Esposizione
+              <span class="active-filter-marker" v-if="isFilterActive('Esposizione')"></span>
+              <b-icon-chevron-up class="caret"></b-icon-chevron-up>
             </div>
-          </b-collapse>
+            <b-collapse
+              id="accordion-8"
+              visible
+              accordion="filter-accordion"
+              role="tabpanel"
+            >
+              <div class="filter-body">
+                <checkbox-filter
+                  filterKey="Esposizione"
+                  @change="onChangeFilter"
+                ></checkbox-filter>
+              </div>
+            </b-collapse>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -212,7 +228,7 @@ import CheckboxFilter from "./filters/CheckboxFilter";
 import RangeFilter from "./filters/RangeFilter";
 import GroupListFilter from "./filters/GroupListFilter";
 
-import { mapState, mapMutations } from "vuex";
+import { mapState, mapMutations, mapGetters } from "vuex";
 
 export default {
   name: "FilterSidebar",
@@ -227,12 +243,18 @@ export default {
     };
   },
   computed: {
+    filterList () {
+      return filterColumns
+    }
   },
   methods: {
     ...mapMutations([
       "data/setFilterValue",
       "data/resetFilters"
     ]),
+    isFilterActive(filterKey) {
+      return this.$store.getters["data/isFilterActive"](filterKey)
+    },
     onChangeFilter(filterName, val) {
       this['data/setFilterValue'](filterName, val)
     },
@@ -303,6 +325,13 @@ export default {
         cursor pointer
         justify-content center
         align-items center
+        .active-filter-marker
+          display inline-block
+          width 10px
+          height 10px
+          border-radius 5px
+          background #ffc107
+          margin-left 5px
         .caret
           margin-left auto
           transition transform 0.3s

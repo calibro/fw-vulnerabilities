@@ -82,6 +82,18 @@ export default {
         }
       })
       return fData
+    },
+    isFilterActive: state => filterKey => {
+      let filterCol = filterCols.find(el => el.key == filterKey)
+      let isActive = false
+      if (state.filterOptions[filterKey] && state.filters[filterKey]){
+        if(filterCol.type == 'range'){
+          isActive = state.filterOptions[filterKey].map((el, index) => el != state.filters[filterKey][index]).includes(true)
+        } else {
+          isActive = state.filterOptions[filterKey].length != state.filters[filterKey].length
+        }
+      }
+      return isActive
     }
   },
   mutations: {
