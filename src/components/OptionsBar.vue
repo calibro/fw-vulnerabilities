@@ -39,6 +39,14 @@
           max="10"
         ></fw-slider>
       </b-col>
+      <b-col sm="1">
+         <b-form-checkbox
+           :checked="showSLA"
+           @change="setShowSLA"
+           class="mt-2 fw-option-select-label"
+           >Show SLA</b-form-checkbox
+         >
+       </b-col>
     </b-row>
   </b-container>
 </template>
@@ -71,10 +79,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(["groupBy", "colorBy", "sortBy", "dotSize"])
+    ...mapState(["groupBy", "colorBy", "sortBy", "dotSize", "showSLA"])
   },
   methods: {
-    ...mapMutations(["setGroupBy", "setColorBy", "setSortBy", "setDotSize"])
+    ...mapMutations(["setGroupBy", "setColorBy", "setSortBy", "setDotSize", "setShowSLA"])
   }
 };
 </script>

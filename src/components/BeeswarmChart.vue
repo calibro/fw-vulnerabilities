@@ -27,6 +27,7 @@ export default {
       groupBy: state => state.groupBy,
       sortBy: state => state.sortBy,
       dotSize: state => state.dotSize,
+      showSLA: state => state.showSLA,
       csvData: state => state.data.csvData
     }),
     ...mapGetters({
@@ -441,6 +442,9 @@ export default {
     },
     dotSize() {
       this.draw(0.3);
+    },
+    showSLA() {
+      this.draw();
     }
   }
 };
