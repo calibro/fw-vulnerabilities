@@ -87,6 +87,11 @@ export default {
         left: 300
       };
 
+      const noteSize = {
+        width: 300,
+        height: 100
+      }
+
       const svg = d3
         .select(this.$refs.mainChart)
         .attr("width", this.width)
@@ -358,6 +363,18 @@ export default {
                 d.x = d.data.x;
                 d.y = d.data.y;
                 //TODO: here update dx/dy to avoid note move out of screen
+                if(d.data.x + d.dx > (self.width - noteSize.width)) {
+                  d.dx = self.width - d.data.x - 2*noteSize.width
+                }
+                if(d.data.x + d.dx < 0) {
+                  d.dx = 0
+                }
+                if(d.data.y + d.dy > (self.height - noteSize.height)) {
+                  d.dy = self.height - d.data.y - 2 * noteSize.height
+                }
+                if(d.data.y + d.dy < 0) {
+                  d.dy = 0
+                }
               });
             });
           })
