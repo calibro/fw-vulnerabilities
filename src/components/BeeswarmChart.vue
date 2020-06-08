@@ -10,9 +10,8 @@
 </template>
 
 <script>
-import * as d3 from "d3";
 import d3Annotation from "d3-svg-annotation";
-
+import * as d3 from "d3";
 import d3Legend from "d3-svg-legend";
 import { mapState, mapGetters, mapMutations } from "vuex";
 import tippy from "tippy.js";
@@ -202,6 +201,8 @@ export default {
           g.select(".domain").remove();
           g.selectAll("text")
             .attr("font-size", "16px")
+            .attr("font-family", "Arial, sans-serif")
+            .attr("font-weight", "bold")
             .attr("x", -margin.left)
             .attr("text-anchor", "start");
         });
