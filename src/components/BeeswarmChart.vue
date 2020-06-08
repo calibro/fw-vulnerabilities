@@ -72,7 +72,7 @@ export default {
 
       this.initialized = true;
     },
-    draw() {
+    draw( simulationAlpha = 1, restartSimulation = true ) {
       !this.initialized && this.init();
 
       let self = this;
@@ -360,8 +360,9 @@ export default {
               });
             });
           })
-          .alpha(1)
-          .restart();
+          if (restartSimulation){
+            this.simulation.alpha(simulationAlpha).restart();
+          }
 
         //this.scaleToFit(minX, maxX, minY, maxY);
       }
@@ -433,13 +434,13 @@ export default {
       this.draw();
     },
     colorBy() {
-      this.draw();
+      this.draw(0.1, false);
     },
     sortBy() {
       this.draw();
     },
     dotSize() {
-      this.draw();
+      this.draw(0.3);
     }
   }
 };
