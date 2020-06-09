@@ -57,6 +57,11 @@ export default {
         .interpolator(d3.interpolateYlOrRd)
         .unknown("#ccc");
 
+      this.slaScale = d3
+        .scaleOrdinal()
+        .range([0, 90, 180, 360])
+        .domain(["< 3", "3", "6", "> 12"]);
+
       this.colorScales = {
         Priority: priorityScale,
         Age: ageScale,
@@ -73,7 +78,7 @@ export default {
 
       this.initialized = true;
     },
-    draw( simulationAlpha = 1, restartSimulation = true ) {
+    draw(simulationAlpha = 1, restartSimulation = true) {
       !this.initialized && this.init();
 
       let self = this;
@@ -90,7 +95,7 @@ export default {
       const noteSize = {
         width: 300,
         height: 100
-      }
+      };
 
       const svg = d3
         .select(this.$refs.mainChart)
@@ -145,11 +150,6 @@ export default {
           .scaleLinear()
           .range([0, chartWidth])
           .domain(cvssRange);
-
-        // const xScaleHelper = d3
-        //   .scaleOrdinal()
-        //   .range([xScale(2), xScale(5.5), xScale(8.5)])
-        //   .domain(["low", "medium", "high"]);
 
         const xScaleHelper = d3
           .scaleThreshold()
@@ -311,17 +311,29 @@ export default {
             );
         }
 
+        const circle = d3
+          .arc()
+          .innerRadius(0)
+          .outerRadius(d => d.radius)
+          .startAngle(0)
+          .endAngle(d => {
+            return d.angle * (Math.PI / 180);
+          });
+
         let bees = chartContainer
           .selectAll(".bee")
           .data(this.filteredData, d => d.dataId);
 
         let beesEnter = bees
           .enter()
-          .append("circle")
+          .append("g")
           .attr("class", "bee")
           .on("click", function(d) {
             self.toggleAnnotation(d, this);
           });
+
+        beesEnter.append("circle");
+        beesEnter.append("path");
 
         bees.exit().each(exitItem => {
           let annIndex = self.annotations.findIndex(ann =>
@@ -336,9 +348,27 @@ export default {
 
         bees = bees.merge(beesEnter);
 
-        bees.attr("r", radius).attr("fill", function(d) {
-          return self.colorScales[self.colorBy](d[self.colorBy]);
-        });
+        bees
+          //.attr("r", radius)
+          .select("path")
+          .attr("fill", function(d) {
+            return self.colorScales[self.colorBy](d[self.colorBy]);
+          })
+          .attr("d", d => {
+            return circle({
+              radius: radius,
+              angle: this.showSLA ? this.slaScale(d.Sla) : 360
+            });
+          });
+
+        bees
+          .select("circle")
+          .attr("r", radius - 1)
+          .attr("fill", "white")
+          .attr("stroke", function(d) {
+            return self.colorScales[self.colorBy](d[self.colorBy]);
+          })
+          .attr("stroke-width", 2);
 
         this.simulation.force("x").x(d => xScale(d["CVSS Score"]));
 
@@ -348,39 +378,41 @@ export default {
 
         this.simulation.force("collide").radius(radius + marginCircles);
 
-        this.simulation
-          .nodes(this.filteredData)
-          .on("tick", function(d) {
-            bees
-              .attr("cx", function(d) {
-                return d.x;
-              })
-              .attr("cy", function(d) {
-                return d.y;
-              });
-            self.annotations.forEach(ann => {
-              ann.annotations().forEach(d => {
-                d.x = d.data.x;
-                d.y = d.data.y;
-                //TODO: here update dx/dy to avoid note move out of screen
-                if(d.data.x + d.dx > (self.width - noteSize.width)) {
-                  d.dx = self.width - d.data.x - 2*noteSize.width
-                }
-                if(d.data.x + d.dx < 0) {
-                  d.dx = 0
-                }
-                if(d.data.y + d.dy > (self.height - noteSize.height)) {
-                  d.dy = self.height - d.data.y - 2 * noteSize.height
-                }
-                if(d.data.y + d.dy < 0) {
-                  d.dy = 0
-                }
-              });
+        this.simulation.nodes(this.filteredData).on("tick", function(d) {
+          bees
+            // .attr("cx", function(d) {
+            //   return d.x;
+            // })
+            // .attr("cy", function(d) {
+            //   return d.y;
+            // });
+            .attr("transform", d => {
+              return `translate(${d.x},${d.y})`;
             });
-          })
-          if (restartSimulation){
-            this.simulation.alpha(simulationAlpha).restart();
-          }
+
+          self.annotations.forEach(ann => {
+            ann.annotations().forEach(d => {
+              d.x = d.data.x;
+              d.y = d.data.y;
+              //TODO: here update dx/dy to avoid note move out of screen
+              if (d.data.x + d.dx > self.width - noteSize.width) {
+                d.dx = self.width - d.data.x - 2 * noteSize.width;
+              }
+              if (d.data.x + d.dx < 0) {
+                d.dx = 0;
+              }
+              if (d.data.y + d.dy > self.height - noteSize.height) {
+                d.dy = self.height - d.data.y - 2 * noteSize.height;
+              }
+              if (d.data.y + d.dy < 0) {
+                d.dy = 0;
+              }
+            });
+          });
+        });
+        if (restartSimulation) {
+          this.simulation.alpha(simulationAlpha).restart();
+        }
 
         //this.scaleToFit(minX, maxX, minY, maxY);
       }
@@ -461,7 +493,7 @@ export default {
       this.draw(0.3);
     },
     showSLA() {
-      this.draw();
+      this.draw(0.1, false);
     }
   }
 };
@@ -478,6 +510,6 @@ svg
   pointer-events: none
 .bee
   cursor:pointer
-.bee:hover
+.bee:hover circle
   stroke:black
 </style>
