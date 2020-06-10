@@ -30,23 +30,23 @@
           :options="colorOptions"
         ></fw-select>
       </b-col>
-      <b-col sm="2">
+      <b-col sm="3" class="align-self-start d-flex flex-column">
         <fw-slider
           label="Dot size"
           :value="dotSize"
           @input="setDotSize"
-          min="1"
+          min="2"
           max="10"
+          label_min="small"
+          label_max="large"
         ></fw-slider>
       </b-col>
-      <b-col sm="1">
-         <b-form-checkbox
-           :checked="showSLA"
-           @change="setShowSLA"
-           class="mt-2 fw-option-select-label"
-           >Show SLA</b-form-checkbox
-         >
-       </b-col>
+      <b-col sm="1" class="align-self-start d-flex flex-column">
+        <label class="fw-option-select-label">SLA</label>
+        <b-form-checkbox :checked="showSLA" @change="setShowSLA" class="mt-2"
+          >Show</b-form-checkbox
+        >
+      </b-col>
     </b-row>
   </b-container>
 </template>
@@ -82,7 +82,13 @@ export default {
     ...mapState(["groupBy", "colorBy", "sortBy", "dotSize", "showSLA"])
   },
   methods: {
-    ...mapMutations(["setGroupBy", "setColorBy", "setSortBy", "setDotSize", "setShowSLA"])
+    ...mapMutations([
+      "setGroupBy",
+      "setColorBy",
+      "setSortBy",
+      "setDotSize",
+      "setShowSLA"
+    ])
   }
 };
 </script>
