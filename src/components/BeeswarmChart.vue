@@ -87,9 +87,9 @@ export default {
 
       const margin = {
         top: 40,
-        right: 20,
-        bottom: 20,
-        left: 300
+        right: 30,
+        bottom: 30,
+        left: 250
       };
 
       const noteSize = {
@@ -349,26 +349,26 @@ export default {
         bees = bees.merge(beesEnter);
 
         bees
-          //.attr("r", radius)
           .select("path")
-          .attr("fill", function(d) {
-            return self.colorScales[self.colorBy](d[self.colorBy]);
-          })
           .attr("d", d => {
             return circle({
-              radius: radius,
+              radius: radius - 1,
               angle: this.showSLA ? this.slaScale(d.Sla) : 360
             });
+          })
+          .transition()
+          .attr("fill", function(d) {
+            return self.colorScales[self.colorBy](d[self.colorBy]);
           });
 
         bees
           .select("circle")
-          .attr("r", radius - 1)
+          .attr("r", radius - 0.5)
           .attr("fill", "white")
           .attr("stroke", function(d) {
             return self.colorScales[self.colorBy](d[self.colorBy]);
           })
-          .attr("stroke-width", 2);
+          .attr("stroke-width", 1);
 
         this.simulation.force("x").x(d => xScale(d["CVSS Score"]));
 
@@ -379,16 +379,9 @@ export default {
         this.simulation.force("collide").radius(radius + marginCircles);
 
         this.simulation.nodes(this.filteredData).on("tick", function(d) {
-          bees
-            // .attr("cx", function(d) {
-            //   return d.x;
-            // })
-            // .attr("cy", function(d) {
-            //   return d.y;
-            // });
-            .attr("transform", d => {
-              return `translate(${d.x},${d.y})`;
-            });
+          bees.attr("transform", d => {
+            return `translate(${d.x},${d.y})`;
+          });
 
           self.annotations.forEach(ann => {
             ann.annotations().forEach(d => {
