@@ -19,9 +19,9 @@
     </text>
     <beeswarm-chart
       x="25"
-      y="65"
+      y="66"
       :width="slideSizeArray[0] - 25"
-      :height="slideSizeArray[1] - 90"
+      :height="slideSizeArray[1] - 33"
     ></beeswarm-chart>
     <text
       :x="slideSizeArray[0] - 25"

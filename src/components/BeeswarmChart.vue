@@ -57,11 +57,6 @@ export default {
         .interpolator(d3.interpolateYlOrRd)
         .unknown("#ccc");
 
-      this.slaScale = d3
-        .scaleOrdinal()
-        .range([0, 90, 180, 360])
-        .domain(["< 3", "3", "6", "> 12"]);
-
       this.colorScales = {
         Priority: priorityScale,
         Age: ageScale,
@@ -82,13 +77,11 @@ export default {
       !this.initialized && this.init();
 
       let self = this;
-      // let vHeight = this.height;
-      // let vWidth = this.width;
 
       const margin = {
         top: 40,
         right: 30,
-        bottom: 30,
+        bottom: 130,
         left: 250
       };
 
@@ -160,6 +153,11 @@ export default {
           .scaleBand()
           .rangeRound([0, chartHeight])
           .domain([...groups.keys()]);
+
+        const slaScale = d3
+          .scaleOrdinal()
+          .range([0, 90, 180, 360])
+          .domain(["< 3", "3", "6", "> 12"]);
 
         // Spatialization iterations
         const anticollisionIterations = 1;
@@ -351,9 +349,10 @@ export default {
         bees
           .select("path")
           .attr("d", d => {
+            const degree = slaScale(d.Sla);
             return circle({
               radius: radius - 1,
-              angle: this.showSLA ? this.slaScale(d.Sla) : 360
+              angle: this.showSLA ? degree : 360
             });
           })
           .transition()
@@ -406,6 +405,96 @@ export default {
         if (restartSimulation) {
           this.simulation.alpha(simulationAlpha).restart();
         }
+
+        //legend color
+        const legendColorCont = d3
+          .select(this.$refs.legend)
+          .select(".legendColor");
+
+        const legendOrdinal = d3Legend
+          .legendColor()
+          .shapePadding(40)
+          .orient("horizontal")
+          .title(self.colorBy)
+          .labelFormat(d3.format(".0f"))
+          .scale(self.colorScales[self.colorBy]);
+
+        if (legendColorCont.empty()) {
+          d3.select(this.$refs.legend)
+            .append("g")
+            .attr("class", "legendColor");
+
+          d3.select(this.$refs.legend)
+            .select(".legendColor")
+            .call(legendOrdinal);
+
+          d3.select(this.$refs.legend)
+            .select(".legendColor")
+            .selectAll("text")
+            .attr("font-family", "'Arial', sans-serif");
+        } else {
+          legendColorCont.call(legendOrdinal);
+          legendColorCont
+            .selectAll("text")
+            .attr("font-family", "'Arial', sans-serif");
+        }
+
+        let legendSlaCont = d3.select(this.$refs.legend).select(".legendSla");
+
+        if (legendSlaCont.empty()) {
+          legendSlaCont = d3
+            .select(this.$refs.legend)
+            .append("g")
+            .attr("class", "legendSla")
+            .attr("transform", `translate(${200},0)`);
+
+          legendSlaCont
+            .append("text")
+            .attr("fill", "#aaa")
+            .text("SLA (months)");
+        }
+
+        legendSlaCont.attr("opacity", this.showSLA ? 1 : 0);
+
+        const nodeLegend = legendSlaCont
+          .selectAll("g")
+          .data(["< 3", "3", "6", "> 12"])
+          .join("g")
+          .attr("transform", (d, i) => {
+            return `translate(${i * 40 + 7},0)`;
+          });
+
+        nodeLegend
+          .selectAll("path")
+          .data(d => [d])
+          .join("path")
+          .attr("fill", "grey")
+          .attr("transform", "translate(0,25)")
+          .attr("d", d =>
+            circle({
+              radius: 8,
+              angle: slaScale(d)
+            })
+          );
+
+        nodeLegend
+          .selectAll("circle")
+          .data(d => [d])
+          .join("circle")
+          .attr("fill", "none")
+          .attr("stroke", "grey")
+          .attr("transform", "translate(0,25)")
+          .attr("r", 8);
+
+        nodeLegend
+          .selectAll("text")
+          .data(d => [d])
+          .join("text")
+          .attr("fill", "black")
+          .attr("text-anchor", "middle")
+          .attr("transform", "translate(0,50)")
+          .attr("font-family", "Arial, sans-serif")
+          .text(d => d);
 
         //this.scaleToFit(minX, maxX, minY, maxY);
       }
