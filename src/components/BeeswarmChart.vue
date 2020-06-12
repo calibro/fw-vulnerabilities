@@ -451,6 +451,7 @@ export default {
           legendSlaCont
             .append("text")
             .attr("fill", "#aaa")
+            .attr("font-family", "Arial, sans-serif")
             .text("SLA (months)");
         }
 
