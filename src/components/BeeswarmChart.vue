@@ -446,7 +446,7 @@ export default {
             .select(this.$refs.legend)
             .append("g")
             .attr("class", "legendSla")
-            .attr("transform", `translate(${200},0)`);
+            .attr("transform", `translate(${280},0)`);
 
           legendSlaCont
             .append("text")
@@ -518,11 +518,13 @@ export default {
           .select("#annotation-" + item.dataId)
           .remove();
       } else {
+        const lorem =
+          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat";
         let newAnn = {
           note: {
             title: item["Vulnerability"] || item["Code"],
-            label: item["CVSS Score"],
-            bgPadding: { top: 15, left: 10, right: 10, bottom: 10 }
+            label: item["Vulnerability description"],
+            bgPadding: 20
           },
           //can use x, y directly instead of data
           data: item,
@@ -531,27 +533,43 @@ export default {
           dy: item.y > this.height / 2 ? -100 : 100
         };
 
-        const type = d3Annotation.annotationCallout;
+        const type = d3Annotation.annotationLabel;
         // Make a function for each note, otherwise user's positioning would be lost at each "update"
         let makeAnnotations = d3Annotation
           .annotation()
           .editMode(true)
           .notePadding(15)
+          .textWrap(300)
           .type(type)
           .annotations([newAnn])
           .accessors({ x: d => d.x, y: d => d.y });
 
-        d3.select(node.parentNode)
+        const annotation = d3
+          .select(node.parentNode)
           .append("g")
           .attr("class", "annotation-group")
           .attr("id", "annotation-" + item.dataId)
           .call(makeAnnotations);
 
-        this.annotations.push(makeAnnotations);
+        annotation
+          .select(".annotation-note-bg")
+          .attr("fill-opacity", 0.85)
+          .attr("fill", "black")
+          .attr("stroke", "white")
+          .attr("rx", 10)
+          .attr("ry", 10);
 
-        // Remove draggable handle on the note target
-        let annHanldes = d3.selectAll("g.annotation").select("circle.handle");
-        annHanldes.remove();
+        annotation
+          .selectAll("text")
+          .attr("font-family", "Arial, sans-serif")
+          .attr("fill", "white");
+
+        annotation
+          .selectAll(".handle")
+          .attr("stroke-opacity", 0)
+          .attr("fill-opacity", 0);
+
+        this.annotations.push(makeAnnotations);
       }
     }
   },
@@ -594,4 +612,8 @@ svg
   cursor:pointer
 .bee:hover circle
   stroke:black
+.annotation-note
+  cursor: move
+.handle
+  pointer-events:none
 </style>
