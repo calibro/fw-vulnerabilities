@@ -518,6 +518,7 @@ export default {
         d3.select(node.parentNode)
           .select("#annotation-" + item.dataId)
           .remove();
+        d3.select(node).selectAll('circle').attr('stroke', 'none')
       } else {
         const lorem =
           "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat";
@@ -569,6 +570,12 @@ export default {
           .selectAll(".handle")
           .attr("stroke-opacity", 0)
           .attr("fill-opacity", 0);
+
+        // remove target handle
+        annotation
+          .selectAll(".annotation-subject .handle").remove()
+
+        d3.select(node).selectAll('circle').attr('stroke', 'black')
 
         this.annotations.push(makeAnnotations);
       }
