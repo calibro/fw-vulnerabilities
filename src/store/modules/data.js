@@ -170,7 +170,11 @@ export default {
               });
           } else if (filterCol.type == "range") {
             let rangeVals = data.map(x => parseFloat(x[filterCol.key]));
-            fOptions = [Math.min(...rangeVals), Math.max(...rangeVals)];
+            if (filterCol.key === "CVSS Score") {
+              fOptions = [0.0, 10.0];
+            } else {
+              fOptions = [Math.min(...rangeVals), Math.max(...rangeVals)];
+            }
           } else if (filterCol.type == "group-list") {
             fOptions = Object.keys(_.groupBy(data, d => d[filterCol.key]));
           }
