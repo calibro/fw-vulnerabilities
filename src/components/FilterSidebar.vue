@@ -231,6 +231,58 @@
             </div>
           </b-collapse>
         </div>
+        <div class="filter-block">
+          <div
+            class="filter-according-toggle"
+            v-b-toggle.accordion-9
+            role="tab"
+          >
+            Source
+            <span
+              class="active-filter-marker"
+              v-if="isFilterActive('Source')"
+            ></span>
+            <b-icon-chevron-up class="caret"></b-icon-chevron-up>
+          </div>
+          <b-collapse
+            id="accordion-9"
+            accordion="filter-accordion"
+            role="tabpanel"
+          >
+            <div class="filter-body">
+              <checkbox-filter
+                filterKey="Source"
+                @change="onChangeFilter"
+              ></checkbox-filter>
+            </div>
+          </b-collapse>
+        </div>
+        <div class="filter-block">
+          <div
+            class="filter-according-toggle"
+            v-b-toggle.accordion-10
+            role="tab"
+          >
+            Remediation supervisor
+            <span
+              class="active-filter-marker"
+              v-if="isFilterActive('Remediation supervisor')"
+            ></span>
+            <b-icon-chevron-up class="caret"></b-icon-chevron-up>
+          </div>
+          <b-collapse
+            id="accordion-10"
+            accordion="filter-accordion"
+            role="tabpanel"
+          >
+            <div class="filter-body">
+              <checkbox-filter
+                filterKey="Remediation supervisor"
+                @change="onChangeFilter"
+              ></checkbox-filter>
+            </div>
+          </b-collapse>
+        </div>
       </div>
     </div>
   </div>

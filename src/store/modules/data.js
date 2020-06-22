@@ -3,11 +3,7 @@ import { groups } from "d3-array";
 import Vue from "vue";
 import _ from "underscore";
 
-const mandatoryCols = [
-  "Code",
-  "State",
-  "Priority"
-];
+const mandatoryCols = ["Code", "State", "Priority"];
 
 const filterCols = [
   {
@@ -16,35 +12,43 @@ const filterCols = [
   },
   {
     key: "CVSS Score",
-    type: 'range'
+    type: "range"
   },
   {
     key: "Priority",
-    type: 'checkbox',
+    type: "checkbox",
     order: ["Low", "Medium", "High"]
   },
   {
     key: "State",
-    type: 'checkbox',
+    type: "checkbox",
     order: ["In Review", "Remediation", "Closed"]
   },
   {
     key: "Close Code",
-    type: 'checkbox'
+    type: "checkbox"
   },
   {
     key: "Team Aziendale",
-    type: 'checkbox'
+    type: "checkbox"
   },
   {
     key: "Year",
-    type: 'checkbox'
+    type: "checkbox"
   },
   {
     key: "Esposizione",
-    type: 'checkbox',
+    type: "checkbox",
     multiple: true
   },
+  {
+    key: "Source",
+    type: "checkbox"
+  },
+  {
+    key: "Remediation supervisor",
+    type: "checkbox"
+  }
 ];
 
 export default {
@@ -64,38 +68,51 @@ export default {
   },
   getters: {
     filteredData: state => {
-      let fData = state.csvData
+      let fData = state.csvData;
 
       Object.keys(state.filters).forEach(filterKey => {
-        let filterCol = filterCols.find(el => el.key == filterKey)
-        if(filterCol.type == 'checkbox'){
-          if(filterCol.multiple){
-            fData = fData.filter(e => _.intersection(state.filters[filterKey], e[filterKey]).length > 0)
-
+        let filterCol = filterCols.find(el => el.key == filterKey);
+        if (filterCol.type == "checkbox") {
+          if (filterCol.multiple) {
+            fData = fData.filter(
+              e =>
+                _.intersection(state.filters[filterKey], e[filterKey]).length >
+                0
+            );
           } else {
-            fData = fData.filter(e => state.filters[filterKey].includes(e[filterKey]))
+            fData = fData.filter(e =>
+              state.filters[filterKey].includes(e[filterKey])
+            );
           }
+        } else if (filterCol.type == "range") {
+          fData = fData.filter(
+            e =>
+              state.filters[filterKey][0] <= e[filterKey] &&
+              state.filters[filterKey][1] >= e[filterKey]
+          );
+        } else if (filterCol.type == "group-list") {
+          fData = fData.filter(e =>
+            state.filters[filterKey].includes(String(e[filterKey]))
+          );
         }
-        else if(filterCol.type == 'range'){
-          fData = fData.filter(e => state.filters[filterKey][0] <= e[filterKey] && state.filters[filterKey][1] >= e[filterKey])
-        }
-        else if (filterCol.type == 'group-list'){
-          fData = fData.filter(e => state.filters[filterKey].includes(String(e[filterKey])))
-        }
-      })
-      return fData
+      });
+      return fData;
     },
     isFilterActive: state => filterKey => {
-      let filterCol = filterCols.find(el => el.key == filterKey)
-      let isActive = false
-      if (state.filterOptions[filterKey] && state.filters[filterKey]){
-        if(filterCol.type == 'range'){
-          isActive = state.filterOptions[filterKey].map((el, index) => el != state.filters[filterKey][index]).includes(true)
+      let filterCol = filterCols.find(el => el.key == filterKey);
+      let isActive = false;
+      if (state.filterOptions[filterKey] && state.filters[filterKey]) {
+        if (filterCol.type == "range") {
+          isActive = state.filterOptions[filterKey]
+            .map((el, index) => el != state.filters[filterKey][index])
+            .includes(true);
         } else {
-          isActive = state.filterOptions[filterKey].length != state.filters[filterKey].length
+          isActive =
+            state.filterOptions[filterKey].length !=
+            state.filters[filterKey].length;
         }
       }
-      return isActive
+      return isActive;
     }
   },
   mutations: {
@@ -108,59 +125,58 @@ export default {
 
         // Fill missing data and columns
         data.forEach((d, index) => {
-          d.dataId = index
+          d.dataId = index;
           filterCols.forEach(col => {
-            if(col.type == 'checkbox') {
-              d[col.key] = d[col.key] ? d[col.key] : 'N/A'
+            if (col.type == "checkbox") {
+              d[col.key] = d[col.key] ? d[col.key] : "N/A";
             }
-          })
+          });
 
           //remove string spaces and split values
-          let str = d['Esposizione'].replace(/\s/g, '');
-           d['Esposizione'] = str.split(',')
+          let str = d["Esposizione"].replace(/\s/g, "");
+          d["Esposizione"] = str.split(",");
 
           // Add SLA values
-          if (d['Age'] < 90) {
-            d['Sla'] = "< 3"
-          } else if (d['Age'] >= 90 && d['Age'] < 180) {
-            d['Sla'] = "3"
-          } else if (d['Age'] >=180 && d['Age'] < 365) {
-            d['Sla'] = "6"
-          } else if (d['Age'] > 365) {
-            d['Sla'] = "> 12"
+          if (d["Age"] < 90) {
+            d["Sla"] = "< 3";
+          } else if (d["Age"] >= 90 && d["Age"] < 180) {
+            d["Sla"] = "3";
+          } else if (d["Age"] >= 180 && d["Age"] < 365) {
+            d["Sla"] = "6";
+          } else if (d["Age"] > 365) {
+            d["Sla"] = "> 12";
           }
-        })
+        });
 
         // Dynamically fill filters option and values based on map
         filterCols.forEach(filterCol => {
-          let fOptions = []
-          if (filterCol.type == 'checkbox'){
-            let cVals = []
+          let fOptions = [];
+          if (filterCol.type == "checkbox") {
+            let cVals = [];
             if (filterCol.multiple) {
-              cVals = [...new Set(_.flatten(data.map(x => x[filterCol.key])))]
+              cVals = [...new Set(_.flatten(data.map(x => x[filterCol.key])))];
             } else {
-              cVals = [...new Set(data.map(x => x[filterCol.key]))]
+              cVals = [...new Set(data.map(x => x[filterCol.key]))];
             }
-            fOptions = cVals.filter(e => e).sort((a, b) =>{
-                if(filterCol.order) {
-                  return filterCol.order.indexOf(a) - filterCol.order.indexOf(b)
+            fOptions = cVals
+              .filter(e => e)
+              .sort((a, b) => {
+                if (filterCol.order) {
+                  return (
+                    filterCol.order.indexOf(a) - filterCol.order.indexOf(b)
+                  );
                 }
-                return a - b
-            })
-          }
-          else if (filterCol.type == 'range'){
+                return a - b;
+              });
+          } else if (filterCol.type == "range") {
             let rangeVals = data.map(x => parseFloat(x[filterCol.key]));
-            fOptions = [
-              Math.min(...rangeVals),
-              Math.max(...rangeVals)
-            ];
+            fOptions = [Math.min(...rangeVals), Math.max(...rangeVals)];
+          } else if (filterCol.type == "group-list") {
+            fOptions = Object.keys(_.groupBy(data, d => d[filterCol.key]));
           }
-          else if (filterCol.type == 'group-list'){
-            fOptions = Object.keys(_.groupBy(data, d => d[filterCol.key]))
-          }
-          Vue.set(state.filterOptions, filterCol.key, fOptions.slice())
-          Vue.set(state.filters, filterCol.key, fOptions.slice())
-        })
+          Vue.set(state.filterOptions, filterCol.key, fOptions.slice());
+          Vue.set(state.filters, filterCol.key, fOptions.slice());
+        });
       } else {
         state.csvData = [];
         state.hierarchy = [];
@@ -180,7 +196,7 @@ export default {
     },
     resetFilters(state) {
       let resetFilters = Object.assign({}, state.filterOptions);
-      Vue.set(state, 'filters', Object.assign({}, resetFilters))
+      Vue.set(state, "filters", Object.assign({}, resetFilters));
     }
   },
   actions: {
