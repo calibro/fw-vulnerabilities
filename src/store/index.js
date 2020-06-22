@@ -45,7 +45,7 @@ export default new Vuex.Store({
       state.slideTitle = val;
     },
     setSlideTitleFromData(state, val) {
-      state.slideTitle = val.substring(0, val.lastIndexOf(".")).split("T")[0];
+      state.slideTitle = val.substring(0, val.lastIndexOf("."));
     },
     setSlideSource(state, val) {
       state.slideSource = val;
@@ -57,6 +57,5 @@ export default new Vuex.Store({
       state.remoteFileList = val;
     }
   },
-  actions: {
-  }
+  actions: {}
 });
