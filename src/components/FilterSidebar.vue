@@ -30,12 +30,14 @@
             role="tab"
           >
             Real target
-            <span class="active-filter-marker" v-if="isFilterActive('Real Target')"></span>
+            <span
+              class="active-filter-marker"
+              v-if="isFilterActive('Real Target')"
+            ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-1"
-            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -54,17 +56,19 @@
             role="tab"
           >
             CVSS Score
-            <span class="active-filter-marker" v-if="isFilterActive('CVSS Score')"></span>
+            <span
+              class="active-filter-marker"
+              v-if="isFilterActive('CVSS Score')"
+            ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-2"
-            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
             <div class="filter-body">
-               <range-filter
+              <range-filter
                 filterKey="CVSS Score"
                 @change="onChangeFilter"
               ></range-filter>
@@ -78,12 +82,14 @@
             role="tab"
           >
             Priority
-            <span class="active-filter-marker" v-if="isFilterActive('Priority')"></span>
+            <span
+              class="active-filter-marker"
+              v-if="isFilterActive('Priority')"
+            ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-3"
-            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -102,14 +108,14 @@
             role="tab"
           >
             State
-            <span class="active-filter-marker" v-if="isFilterActive('State')"></span>
-            <b-icon-chevron-up
-              class="caret"
-            ></b-icon-chevron-up>
+            <span
+              class="active-filter-marker"
+              v-if="isFilterActive('State')"
+            ></span>
+            <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-4"
-            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -128,12 +134,14 @@
             role="tab"
           >
             Close Code
-            <span class="active-filter-marker" v-if="isFilterActive('Close Code')"></span>
+            <span
+              class="active-filter-marker"
+              v-if="isFilterActive('Close Code')"
+            ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-5"
-            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -152,12 +160,14 @@
             role="tab"
           >
             Team Aziendale
-            <span class="active-filter-marker" v-if="isFilterActive('Team Aziendale')"></span>
+            <span
+              class="active-filter-marker"
+              v-if="isFilterActive('Team Aziendale')"
+            ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-6"
-            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -176,12 +186,14 @@
             role="tab"
           >
             Year
-            <span class="active-filter-marker" v-if="isFilterActive('Year')"></span>
+            <span
+              class="active-filter-marker"
+              v-if="isFilterActive('Year')"
+            ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
           <b-collapse
             id="accordion-7"
-            visible
             accordion="filter-accordion"
             role="tabpanel"
           >
@@ -194,32 +206,34 @@
           </b-collapse>
         </div>
         <div class="filter-block">
-            <div
-              class="filter-according-toggle"
-              v-b-toggle.accordion-8
-              role="tab"
-            >
-              Esposizione
-              <span class="active-filter-marker" v-if="isFilterActive('Esposizione')"></span>
-              <b-icon-chevron-up class="caret"></b-icon-chevron-up>
-            </div>
-            <b-collapse
-              id="accordion-8"
-              visible
-              accordion="filter-accordion"
-              role="tabpanel"
-            >
-              <div class="filter-body">
-                <checkbox-filter
-                  filterKey="Esposizione"
-                  @change="onChangeFilter"
-                ></checkbox-filter>
-              </div>
-            </b-collapse>
+          <div
+            class="filter-according-toggle"
+            v-b-toggle.accordion-8
+            role="tab"
+          >
+            Esposizione
+            <span
+              class="active-filter-marker"
+              v-if="isFilterActive('Esposizione')"
+            ></span>
+            <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
+          <b-collapse
+            id="accordion-8"
+            accordion="filter-accordion"
+            role="tabpanel"
+          >
+            <div class="filter-body">
+              <checkbox-filter
+                filterKey="Esposizione"
+                @change="onChangeFilter"
+              ></checkbox-filter>
+            </div>
+          </b-collapse>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <script>
@@ -243,20 +257,17 @@ export default {
     };
   },
   computed: {
-    filterList () {
-      return filterColumns
+    filterList() {
+      return filterColumns;
     }
   },
   methods: {
-    ...mapMutations([
-      "data/setFilterValue",
-      "data/resetFilters"
-    ]),
+    ...mapMutations(["data/setFilterValue", "data/resetFilters"]),
     isFilterActive(filterKey) {
-      return this.$store.getters["data/isFilterActive"](filterKey)
+      return this.$store.getters["data/isFilterActive"](filterKey);
     },
     onChangeFilter(filterName, val) {
-      this['data/setFilterValue'](filterName, val)
+      this["data/setFilterValue"](filterName, val);
     },
     toggleSidebar() {
       this.isOpen = !this.isOpen;
