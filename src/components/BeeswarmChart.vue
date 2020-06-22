@@ -532,7 +532,8 @@ export default {
               item["Substate"] +
               " | " +
               item["Vulnerability description"],
-            bgPadding: 20
+            bgPadding: 20,
+            orientation: "fixed"
           },
           //can use x, y directly instead of data
           data: item,
