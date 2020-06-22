@@ -136,15 +136,18 @@ export default {
           let str = d["Esposizione"].replace(/\s/g, "");
           d["Esposizione"] = str.split(",");
 
-          // Add SLA values
-          if (d["Age"] < 90) {
-            d["Sla"] = "< 3";
-          } else if (d["Age"] >= 90 && d["Age"] < 180) {
-            d["Sla"] = "3";
-          } else if (d["Age"] >= 180 && d["Age"] < 365) {
-            d["Sla"] = "6";
-          } else if (d["Age"] > 365) {
-            d["Sla"] = "> 12";
+          d["Sla"] = false;
+
+          if (d["Priority"] === "High" && d["Age"] > 90) {
+            d["Sla"] = true;
+          }
+
+          if (d["Priority"] === "Medium" && d["Age"] > 180) {
+            d["Sla"] = true;
+          }
+
+          if (d["Priority"] === "Low" && d["Age"] > 365) {
+            d["Sla"] = true;
           }
         });
 

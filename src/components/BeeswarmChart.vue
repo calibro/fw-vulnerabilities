@@ -156,8 +156,8 @@ export default {
 
         const slaScale = d3
           .scaleOrdinal()
-          .range([0, 90, 180, 360])
-          .domain(["< 3", "3", "6", "> 12"]);
+          .range([0, 360])
+          .domain([false, true]);
 
         // Spatialization iterations
         const anticollisionIterations = 1;
@@ -453,14 +453,14 @@ export default {
             .append("text")
             .attr("fill", "#aaa")
             .attr("font-family", "Arial, sans-serif")
-            .text("SLA (months)");
+            .text("overcome SLA");
         }
 
         legendSlaCont.attr("opacity", this.showSLA ? 1 : 0);
 
         const nodeLegend = legendSlaCont
           .selectAll("g")
-          .data(["< 3", "3", "6", "> 12"])
+          .data([false, true])
           .join("g")
           .attr("transform", (d, i) => {
             return `translate(${i * 40 + 7},0)`;
@@ -557,9 +557,10 @@ export default {
           .remove();
         d3.select(node)
           .selectAll("circle")
-          .attr("stroke", "none");
+          .attr("stroke", d => {
+            return this.colorScales[this.colorBy](d[this.colorBy]);
+          });
       } else {
-        //,
         let newAnn = {
           note: {
             title: item["Vulnerability"] || item["Code"],
