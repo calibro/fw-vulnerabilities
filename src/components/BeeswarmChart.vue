@@ -518,14 +518,20 @@ export default {
         d3.select(node.parentNode)
           .select("#annotation-" + item.dataId)
           .remove();
-        d3.select(node).selectAll('circle').attr('stroke', 'none')
+        d3.select(node)
+          .selectAll("circle")
+          .attr("stroke", "none");
       } else {
-        const lorem =
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat";
+        //,
         let newAnn = {
           note: {
             title: item["Vulnerability"] || item["Code"],
-            label: item["Vulnerability description"],
+            label:
+              item["Code"] +
+              " | " +
+              item["Substate"] +
+              " | " +
+              item["Vulnerability description"],
             bgPadding: 20
           },
           //can use x, y directly instead of data
@@ -541,7 +547,7 @@ export default {
           .annotation()
           .editMode(true)
           .notePadding(15)
-          .textWrap(300)
+          .textWrap(500)
           .type(type)
           .annotations([newAnn])
           .accessors({ x: d => d.x, y: d => d.y });
@@ -567,15 +573,26 @@ export default {
           .attr("fill", "white");
 
         annotation
+          .select(".annotation-note-title")
+          .style("cursor", "pointer")
+          .style("text-decoration", "underline")
+          .on("click", d => {
+            const baseUrl =
+              "https://fastweb.service-now.com/nav_to.do?uri=%2Fsn_vul_vulnerable_item.do%3Fsys_id%3D";
+            window.open(baseUrl + item["sys_id"]);
+          });
+
+        annotation
           .selectAll(".handle")
           .attr("stroke-opacity", 0)
           .attr("fill-opacity", 0);
 
         // remove target handle
-        annotation
-          .selectAll(".annotation-subject .handle").remove()
+        annotation.selectAll(".annotation-subject .handle").remove();
 
-        d3.select(node).selectAll('circle').attr('stroke', 'black')
+        d3.select(node)
+          .selectAll("circle")
+          .attr("stroke", "black");
 
         this.annotations.push(makeAnnotations);
       }
