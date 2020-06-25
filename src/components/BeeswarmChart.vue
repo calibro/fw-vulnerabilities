@@ -28,6 +28,7 @@ export default {
       sortBy: state => state.sortBy,
       dotSize: state => state.dotSize,
       showSLA: state => state.showSLA,
+      showDescriptionNote:  state => state.showDescriptionNote,
       csvData: state => state.data.csvData
     }),
     ...mapGetters({
@@ -564,12 +565,7 @@ export default {
         let newAnn = {
           note: {
             title: item["Vulnerability"] || item["Code"],
-            label:
-              item["Code"] +
-              " | " +
-              item["Substate"] +
-              " | " +
-              item["Vulnerability description"],
+            label: this.getAnnotationText(item),
             bgPadding: 20,
             orientation: "fixed"
           },
@@ -598,7 +594,28 @@ export default {
           .attr("id", "annotation-" + item.dataId)
           .call(makeAnnotations);
 
-        annotation
+        this.setAnnotationSyle(annotation)
+        makeAnnotations.element = annotation
+        
+        d3.select(node)
+          .selectAll("circle")
+          .attr("stroke", "black");
+
+        this.annotations.push(makeAnnotations);
+      }
+    },
+    updateAnnotationText () {
+      let self = this
+      this.annotations.forEach(annotation => {
+        annotation.annotations().forEach(d => {
+          d.note.label = self.getAnnotationText(d.data)
+        })
+        annotation.updateText()
+        this.setAnnotationSyle(annotation.element)
+      })
+    },
+    setAnnotationSyle(annotation) {
+      annotation
           .select(".annotation-note-bg")
           .attr("fill-opacity", 0.85)
           .attr("fill", "black")
@@ -628,13 +645,18 @@ export default {
 
         // remove target handle
         annotation.selectAll(".annotation-subject .handle").remove();
+    },
+    getAnnotationText(item) {
+      let note = item["Code"] +
+              " | " +
+              item["Substate"]
 
-        d3.select(node)
-          .selectAll("circle")
-          .attr("stroke", "black");
-
-        this.annotations.push(makeAnnotations);
+      if (this.showDescriptionNote) {
+        note +=
+              " | " +
+              item["Vulnerability description"]
       }
+      return note
     }
   },
   watch: {
@@ -658,6 +680,9 @@ export default {
     },
     showSLA() {
       this.draw(0.1, false);
+    },
+    showDescriptionNote () {
+      this.updateAnnotationText()
     }
   }
 };

@@ -15,6 +15,7 @@ export default new Vuex.Store({
     sortBy: "count",
     dotSize: 5,
     showSLA: false,
+    showDescriptionNote: false,
     slideTitle: "",
     slideSource: "",
     slideSize: "1920:1080",
@@ -40,6 +41,9 @@ export default new Vuex.Store({
     },
     setShowSLA(state, val) {
       state.showSLA = val;
+    },
+    setShowDescriptionNote(state, val) {
+      state.showDescriptionNote = val;
     },
     setslideTitle(state, val) {
       state.slideTitle = val;
