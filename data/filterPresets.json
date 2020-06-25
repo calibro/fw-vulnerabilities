@@ -1,0 +1,23 @@
+[
+  {
+    "text": "None",
+    "value": null
+  },
+  {
+    "text": "Preset 1",
+    "value": {
+      "viewOptions": {
+        "groupBy": "Team Aziendale",
+        "sortBy": "Count",
+        "colorBy": "Fattore di esposizione",
+        "showSLA": true
+      },
+      "filtersOptions": {
+        "Priority": ["High"],
+        "CVSS Score": [2.0, 10],
+        "Close Code": ["N/A", "Not fixed"],
+        "Esposizione": ["Internet"]
+      }
+    }
+  }
+]
