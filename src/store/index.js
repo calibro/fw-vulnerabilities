@@ -12,14 +12,16 @@ export default new Vuex.Store({
   state: {
     groupBy: "State",
     colorBy: "Priority",
-    sortBy: "count",
+    sortBy: "Count",
     dotSize: 5,
     showSLA: false,
     showDescriptionNote: false,
     slideTitle: "",
     slideSource: "",
     slideSize: "1920:1080",
-    remoteFileList: []
+    remoteFileList: [],
+    currentFilterPreset: null,
+    presetOptionsList: []
   },
   getters: {
     slideSizeArray: state => {
@@ -57,9 +59,20 @@ export default new Vuex.Store({
     setSlideSize(state, val) {
       state.slideSize = val;
     },
-    setRemoteFileList(state, val) {
-      state.remoteFileList = val;
+    setViewPreset(state, values) {
+      Object.keys(values).forEach(key => {
+        Vue.set(state, key, values[key])
+      })
+    },
+    setPresetOptionsList(state, val) {
+      state.presetOptionsList = val;
     }
   },
-  actions: {}
+  actions: {
+    loadPresetList({ state, commit }) {
+      axios.get("./data/filterPresets.json").then(resp => {
+        commit("setPresetOptionsList", resp.data);
+      });
+    }
+  }
 });

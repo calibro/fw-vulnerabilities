@@ -79,8 +79,8 @@ export default {
         { value: "Fattore di esposizione", text: "Fattore di esposizione" }
       ],
       sortOptions: [
-        { value: "count", text: "Count" },
-        { value: "alphabetically", text: "Alphabetically" }
+        { value: "Count", text: "Count" },
+        { value: "Alphabetically", text: "Alphabetically" }
       ]
     };
   },

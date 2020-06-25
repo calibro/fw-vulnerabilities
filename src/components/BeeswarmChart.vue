@@ -123,7 +123,7 @@ export default {
 
         const groups = new Map(
           [...rollup].sort((a, b) => {
-            if (self.sortBy === "count") {
+            if (self.sortBy === "Count") {
               return d3.descending(a[1], b[1]);
             } else {
               return d3.ascending(a[0], b[0]);

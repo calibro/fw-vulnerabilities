@@ -40,6 +40,13 @@
           :options="slideSizeOptions"
         ></fw-select>
       </b-col>
+      <b-col>
+        <fw-select
+          label="Filter preset"
+          @change="changePreset"
+          :options="presetOptionsList"
+        ></fw-select>
+      </b-col>
       <!-- <b-col>
         <fw-input
           label="Source"
@@ -67,11 +74,17 @@ export default {
     };
   },
   computed: {
-    ...mapState(["slideTitle", "slideSource", "slideSize"])
+    ...mapState(["slideTitle", "slideSource", "slideSize", "presetOptionsList"])
   },
   methods: {
-    ...mapMutations(["setslideTitle", "setSlideSource", "setSlideSize"]),
+    ...mapMutations(["setslideTitle", "setSlideSource", "setSlideSize", "setViewPreset", "data/setFilterPreset"]),
 
+    changePreset(val) {
+      if (val) {
+        this["setViewPreset"](val.viewOptions)
+        this["data/setFilterPreset"](val.filtersOptions)
+      }
+    },
     onExport(format, title) {
       this.$emit("export", format, title);
     }

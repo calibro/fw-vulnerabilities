@@ -55,6 +55,9 @@ export default {
     FilterSidebar,
     DataSelector
   },
+  mounted() {
+    this.$store.dispatch("loadPresetList");
+  },
   computed: {
     showApp() {
       return (

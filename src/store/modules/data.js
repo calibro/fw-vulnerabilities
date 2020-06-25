@@ -204,7 +204,12 @@ export default {
     resetFilters(state) {
       let resetFilters = Object.assign({}, state.filterOptions);
       Vue.set(state, "filters", Object.assign({}, resetFilters));
-    }
+    },
+    setFilterPreset(state, values) {
+      Object.keys(values).forEach(key => {
+        Vue.set(state.filters, key, values[key])
+      })
+    },
   },
   actions: {
     async loadTestData({ state, commit }) {
