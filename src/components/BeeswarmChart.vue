@@ -637,7 +637,12 @@ export default {
       annotation
         .select(".annotation-note-title")
         .style("cursor", "pointer")
-        .style("text-decoration", "underline");
+        .style("text-decoration", "underline")
+        .attr("transform", "translate(0,-5)");
+
+      annotation
+        .select(".annotation-note-label")
+        .attr("transform", "translate(0,5)");
 
       annotation
         .selectAll(".handle")
