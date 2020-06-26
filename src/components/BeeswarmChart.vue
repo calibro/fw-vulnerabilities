@@ -454,7 +454,7 @@ export default {
             .append("text")
             .attr("fill", "#aaa")
             .attr("font-family", "Arial, sans-serif")
-            .text("overcome SLA");
+            .text("SLA breached");
         }
 
         legendSlaCont.attr("opacity", this.showSLA ? 1 : 0);
@@ -594,7 +594,13 @@ export default {
           .attr("id", "annotation-" + item.dataId)
           .call(makeAnnotations);
 
-        this.setAnnotationSyle(annotation);
+        annotation.select(".annotation-note-title").on("click", d => {
+          const baseUrl =
+            "https://fastweb.service-now.com/nav_to.do?uri=%2Fsn_vul_vulnerable_item.do%3Fsys_id%3D";
+          window.open(baseUrl + item["sys_id"]);
+        });
+
+        this.setAnnotationStyle(annotation);
         makeAnnotations.element = annotation;
 
         d3.select(node)
@@ -611,10 +617,10 @@ export default {
           d.note.label = self.getAnnotationText(d.data);
         });
         annotation.updateText();
-        this.setAnnotationSyle(annotation.element);
+        this.setAnnotationStyle(annotation.element);
       });
     },
-    setAnnotationSyle(annotation) {
+    setAnnotationStyle(annotation) {
       annotation
         .select(".annotation-note-bg")
         .attr("fill-opacity", 0.85)
@@ -631,12 +637,7 @@ export default {
       annotation
         .select(".annotation-note-title")
         .style("cursor", "pointer")
-        .style("text-decoration", "underline")
-        .on("click", d => {
-          const baseUrl =
-            "https://fastweb.service-now.com/nav_to.do?uri=%2Fsn_vul_vulnerable_item.do%3Fsys_id%3D";
-          window.open(baseUrl + item["sys_id"]);
-        });
+        .style("text-decoration", "underline");
 
       annotation
         .selectAll(".handle")

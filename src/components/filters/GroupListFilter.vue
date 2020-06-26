@@ -14,20 +14,20 @@
     <div class="group-list">
       <div v-for="item in filteredOption" :key="'g' + item.id">
         <input
-        type="checkbox"
-        :checked="activeValues.includes(String(item.id))"
-        :name="item.id"
-        class="item-checkbox"
-        @click="toggleValue(item.id)"
+          type="checkbox"
+          :checked="activeValues.includes(String(item.id))"
+          :name="item.id"
+          class="item-checkbox"
+          @click="toggleValue(item.id)"
         />
-        {{item.label}}
+        {{ item.label }}
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import _ from 'underscore'
+import _ from "underscore";
 
 export default {
   name: "GroupListFilter",
@@ -38,44 +38,49 @@ export default {
     };
   },
   computed: {
-    filteredOption () {
-      return this.searchTerm.length > 0 ? this.options.filter(el => el.label.includes(this.searchTerm)) : this.options
+    filteredOption() {
+      return this.searchTerm.length > 0
+        ? this.options.filter(el => el.label.includes(this.searchTerm))
+        : this.options;
     },
-    options () {
-      let opts = this.$store.state.data.filterOptions[this.filterKey]
-      let allData = this.$store.state.data.csvData
-      return opts && opts.map(key => {
-              return {
-                id: key,
-                label: 'Application ' + key,
-              }
-            })
+    options() {
+      let opts = this.$store.state.data.filterOptions[this.filterKey];
+      let allData = this.$store.state.data.csvData;
+      return (
+        opts &&
+        opts.map(key => {
+          return {
+            id: key,
+            label: key
+          };
+        })
+      );
     },
     activeValues() {
-      return this.$store.state.data.filters[this.filterKey]
+      return this.$store.state.data.filters[this.filterKey];
     }
   },
   methods: {
-    toggleValue (id) {
-      let vals = this.activeValues.slice()
+    toggleValue(id) {
+      let vals = this.activeValues.slice();
       if (vals.includes(id)) {
-        vals.splice(vals.indexOf(id), 1)
+        vals.splice(vals.indexOf(id), 1);
       } else {
-        vals.push(id)
+        vals.push(id);
       }
-      this.$emit('change', {filterKey: this.filterKey, val: vals})
+      this.$emit("change", { filterKey: this.filterKey, val: vals });
     },
     selectAll() {
-      let addVals = this.filteredOption.map(e => e.id)
-      let vals = _.union(addVals, this.activeValues)
+      let addVals = this.filteredOption.map(e => e.id);
+      let vals = _.union(addVals, this.activeValues);
 
-      this.$emit('change', {filterKey: this.filterKey, val: vals})
+      this.$emit("change", { filterKey: this.filterKey, val: vals });
     },
     deselectAll() {
-      let remVals = this.filteredOption.map(e => e.id)
-      let vals = _.difference(this.activeValues, remVals)
+      let remVals = this.filteredOption.map(e => e.id);
+      let vals = _.difference(this.activeValues, remVals);
 
-      this.$emit('change', {filterKey: this.filterKey, val: vals})
+      this.$emit("change", { filterKey: this.filterKey, val: vals });
     }
   }
 };
