@@ -32,7 +32,7 @@
             Real target
             <span
               class="active-filter-marker"
-              v-if="isFilterActive('Real Target')"
+              v-if="isFilterActive('vit_u_real_target')"
             ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
@@ -43,7 +43,7 @@
           >
             <div class="filter-body">
               <group-list-filter
-                filterKey="Real Target"
+                filterKey="vit_u_real_target"
                 @change="onChangeFilter"
               ></group-list-filter>
             </div>
@@ -58,7 +58,7 @@
             CVSS Score
             <span
               class="active-filter-marker"
-              v-if="isFilterActive('CVSS Score')"
+              v-if="isFilterActive('vit_u_cvss_score')"
             ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
@@ -69,7 +69,7 @@
           >
             <div class="filter-body">
               <range-filter
-                filterKey="CVSS Score"
+                filterKey="vit_u_cvss_score"
                 @change="onChangeFilter"
               ></range-filter>
             </div>
@@ -84,7 +84,7 @@
             Priority
             <span
               class="active-filter-marker"
-              v-if="isFilterActive('Priority')"
+              v-if="isFilterActive('vit_priority')"
             ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
@@ -95,7 +95,7 @@
           >
             <div class="filter-body">
               <checkbox-filter
-                filterKey="Priority"
+                filterKey="vit_priority"
                 @change="onChangeFilter"
               ></checkbox-filter>
             </div>
@@ -110,7 +110,7 @@
             State
             <span
               class="active-filter-marker"
-              v-if="isFilterActive('State')"
+              v-if="isFilterActive('vit_state')"
             ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
@@ -121,7 +121,7 @@
           >
             <div class="filter-body">
               <checkbox-filter
-                filterKey="State"
+                filterKey="vit_state"
                 @change="onChangeFilter"
               ></checkbox-filter>
             </div>
@@ -136,7 +136,7 @@
             Close Code
             <span
               class="active-filter-marker"
-              v-if="isFilterActive('Close Code')"
+              v-if="isFilterActive('vit_u_close_code')"
             ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
@@ -147,7 +147,7 @@
           >
             <div class="filter-body">
               <checkbox-filter
-                filterKey="Close Code"
+                filterKey="vit_u_close_code"
                 @change="onChangeFilter"
               ></checkbox-filter>
             </div>
@@ -162,7 +162,7 @@
             Team Aziendale
             <span
               class="active-filter-marker"
-              v-if="isFilterActive('Team Aziendale')"
+              v-if="isFilterActive('usr_u_business_unit')"
             ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
@@ -173,7 +173,7 @@
           >
             <div class="filter-body">
               <checkbox-filter
-                filterKey="Team Aziendale"
+                filterKey="usr_u_business_unit"
                 @change="onChangeFilter"
               ></checkbox-filter>
             </div>
@@ -188,7 +188,7 @@
             Year
             <span
               class="active-filter-marker"
-              v-if="isFilterActive('Year')"
+              v-if="isFilterActive('vit_u_year')"
             ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
@@ -199,7 +199,7 @@
           >
             <div class="filter-body">
               <checkbox-filter
-                filterKey="Year"
+                filterKey="vit_u_year"
                 @change="onChangeFilter"
               ></checkbox-filter>
             </div>
@@ -214,7 +214,7 @@
             Esposizione
             <span
               class="active-filter-marker"
-              v-if="isFilterActive('Esposizione')"
+              v-if="isFilterActive('dmp_u_esposizione')"
             ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
@@ -225,7 +225,7 @@
           >
             <div class="filter-body">
               <checkbox-filter
-                filterKey="Esposizione"
+                filterKey="dmp_u_esposizione"
                 @change="onChangeFilter"
               ></checkbox-filter>
             </div>
@@ -240,7 +240,7 @@
             Source
             <span
               class="active-filter-marker"
-              v-if="isFilterActive('Source')"
+              v-if="isFilterActive('vit_source')"
             ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
@@ -251,7 +251,7 @@
           >
             <div class="filter-body">
               <checkbox-filter
-                filterKey="Source"
+                filterKey="vit_source"
                 @change="onChangeFilter"
               ></checkbox-filter>
             </div>
@@ -266,7 +266,7 @@
             Remediation supervisor
             <span
               class="active-filter-marker"
-              v-if="isFilterActive('Remediation supervisor')"
+              v-if="isFilterActive('vit_u_handler')"
             ></span>
             <b-icon-chevron-up class="caret"></b-icon-chevron-up>
           </div>
@@ -277,7 +277,7 @@
           >
             <div class="filter-body">
               <group-list-filter
-                filterKey="Remediation supervisor"
+                filterKey="vit_u_handler"
                 @change="onChangeFilter"
               ></group-list-filter>
             </div>

@@ -93,9 +93,9 @@ export default {
         this["data/setFilterPreset"](val.filtersOptions);
       } else {
         const defaultOptions = {
-          groupBy: "State",
+          groupBy: "vit_state",
           sortBy: "Count",
-          colorBy: "Priority",
+          colorBy: "vit_priority",
           showSLA: false
         };
         this["setViewPreset"](defaultOptions);

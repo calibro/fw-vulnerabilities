@@ -10,8 +10,8 @@ export default new Vuex.Store({
     data
   },
   state: {
-    groupBy: "State",
-    colorBy: "Priority",
+    groupBy: "vit_state",
+    colorBy: "vit_priority",
     sortBy: "Count",
     dotSize: 5,
     showSLA: false,
@@ -61,8 +61,8 @@ export default new Vuex.Store({
     },
     setViewPreset(state, values) {
       Object.keys(values).forEach(key => {
-        Vue.set(state, key, values[key])
-      })
+        Vue.set(state, key, values[key]);
+      });
     },
     setPresetOptionsList(state, val) {
       state.presetOptionsList = val;

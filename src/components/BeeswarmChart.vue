@@ -49,19 +49,44 @@ export default {
 
       let ageScale = d3
         .scaleSequential()
-        .domain([0, d3.max(csvData, d => d["Age"])])
+        .domain([0, d3.max(csvData, d => d["vit_age"])])
         .interpolator(d3.interpolateBlues);
 
       let esposizioneScale = d3
         .scaleSequential()
-        .domain([0, d3.max(csvData, d => d["Fattore di esposizione"])])
+        .domain([
+          0,
+          d3.max(csvData, d => d["dmp_u_fatturato_esposizione_residuo"])
+        ])
         .interpolator(d3.interpolateYlOrRd)
         .unknown("#ccc");
 
+      let workaroundScale = d3
+        .scaleSequential()
+        .domain([0, d3.max(csvData, d => d["sir_u_workaround_cost"])])
+        .interpolator(d3.interpolateYlGn)
+        .unknown("#ccc");
+
+      let remediationScale = d3
+        .scaleSequential()
+        .domain([0, d3.max(csvData, d => d["sir_u_remediation_cost"])])
+        .interpolator(d3.interpolateYlGn)
+        .unknown("#ccc");
+
       this.colorScales = {
-        Priority: priorityScale,
-        Age: ageScale,
-        "Fattore di esposizione": esposizioneScale
+        vit_priority: priorityScale,
+        vit_age: ageScale,
+        dmp_u_fatturato_esposizione_residuo: esposizioneScale,
+        sir_u_workaround_cost: workaroundScale,
+        sir_u_remediation_cost: remediationScale
+      };
+
+      this.colorScalesLabel = {
+        vit_priority: "Priority",
+        vit_age: "Age",
+        dmp_u_fatturato_esposizione_residuo: "Esposizione",
+        sir_u_workaround_cost: "Workaround Cost",
+        sir_u_remediation_cost: "Remediation Cost"
       };
 
       this.simulation = d3
@@ -138,7 +163,7 @@ export default {
         //     (e.y = e.y ? e.y : vHeight / 2);
         // });
 
-        let cvssRange = this.$store.state.data.filters["CVSS Score"];
+        let cvssRange = this.$store.state.data.filters["vit_u_cvss_score"];
         // Use CVSS range based on filter values
         const xScale = d3
           .scaleLinear()
@@ -371,7 +396,7 @@ export default {
           })
           .attr("stroke-width", 1);
 
-        this.simulation.force("x").x(d => xScale(d["CVSS Score"]));
+        this.simulation.force("x").x(d => xScale(d["vit_u_cvss_score"]));
 
         this.simulation.force("y").y(d => {
           return yScale(d[this.groupBy]) + yScale.bandwidth() / 2;
@@ -417,7 +442,7 @@ export default {
           .legendColor()
           .shapePadding(40)
           .orient("horizontal")
-          .title(self.colorBy)
+          .title(self.colorScalesLabel[self.colorBy])
           .labelFormat(d3.format(".0f"))
           .scale(self.colorScales[self.colorBy]);
 
@@ -564,7 +589,7 @@ export default {
       } else {
         let newAnn = {
           note: {
-            title: item["Vulnerability"] || item["Code"],
+            title: item["vit_u_vulnerability"] || item["vit_number"],
             label: this.getAnnotationText(item),
             bgPadding: 20,
             orientation: "fixed"
@@ -597,7 +622,7 @@ export default {
         annotation.select(".annotation-note-title").on("click", d => {
           const baseUrl =
             "https://fastweb.service-now.com/nav_to.do?uri=%2Fsn_vul_vulnerable_item.do%3Fsys_id%3D";
-          window.open(baseUrl + item["sys_id"]);
+          window.open(baseUrl + item["vit_sys_id"]);
         });
 
         this.setAnnotationStyle(annotation);
@@ -653,12 +678,12 @@ export default {
       annotation.selectAll(".annotation-subject .handle").remove();
     },
     getAnnotationText(item) {
-      let note = `${item["Code"]}${
-        item["Substate"] ? " | " + item["Substate"] : ""
+      let note = `${item["vit_number"]}${
+        item["vit_substate"] ? " | " + item["vit_substate"] : ""
       }`;
 
       if (this.showDescriptionNote) {
-        note += " | " + item["Vulnerability description"];
+        note += " | " + item["vit_u_vulnerability_description_text"];
       }
       return note;
     }

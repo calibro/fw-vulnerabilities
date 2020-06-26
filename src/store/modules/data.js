@@ -3,50 +3,70 @@ import { groups } from "d3-array";
 import Vue from "vue";
 import _ from "underscore";
 
-const mandatoryCols = ["Code", "State", "Priority"];
+const mandatoryCols = [
+  "vit_number",
+  "vit_u_vulnerability",
+  "vit_u_vulnerability_description_text",
+  "vit_source",
+  "vit_u_real_target",
+  "dmp_u_esposizione",
+  "dmp_u_fatturato_esposizione_residuo",
+  "vit_priority",
+  "vit_u_cvss_score",
+  "vit_state",
+  "vit_substate",
+  "vit_u_close_code",
+  "vit_u_handler",
+  "usr_u_business_unit",
+  "vit_age",
+  "vit_u_year",
+  "vit_sys_id",
+  "sir_u_remediation_cost",
+  "sir_u_workaround_cost"
+];
 
 const filterCols = [
   {
-    key: "Real Target",
+    key: "vit_u_real_target",
     type: "group-list"
   },
   {
-    key: "CVSS Score",
+    key: "vit_u_cvss_score",
     type: "range"
   },
   {
-    key: "Priority",
+    key: "vit_priority",
     type: "checkbox",
     order: ["Low", "Medium", "High"]
   },
   {
-    key: "State",
+    key: "vit_state",
     type: "checkbox",
     order: ["In Review", "Remediation", "Closed"]
   },
   {
-    key: "Close Code",
+    key: "vit_u_close_code",
     type: "checkbox"
   },
   {
-    key: "Team Aziendale",
+    key: "usr_u_business_unit",
     type: "checkbox"
   },
   {
-    key: "Year",
+    key: "vit_u_year",
     type: "checkbox"
   },
   {
-    key: "Esposizione",
+    key: "dmp_u_esposizione",
     type: "checkbox",
     multiple: true
   },
   {
-    key: "Source",
+    key: "vit_source",
     type: "checkbox"
   },
   {
-    key: "Remediation supervisor",
+    key: "vit_u_handler",
     type: "group-list"
   }
 ];
@@ -133,20 +153,20 @@ export default {
           });
 
           //remove string spaces and split values
-          let str = d["Esposizione"].replace(/\s/g, "");
-          d["Esposizione"] = str.split(",");
+          let str = d["dmp_u_esposizione"].replace(/\s/g, "");
+          d["dmp_u_esposizione"] = str.split(",");
 
           d["Sla"] = false;
 
-          if (d["Priority"] === "High" && d["Age"] > 90) {
+          if (d["vit_priority"] === "High" && d["vit_age"] > 90) {
             d["Sla"] = true;
           }
 
-          if (d["Priority"] === "Medium" && d["Age"] > 180) {
+          if (d["vit_priority"] === "Medium" && d["vit_age"] > 180) {
             d["Sla"] = true;
           }
 
-          if (d["Priority"] === "Low" && d["Age"] > 365) {
+          if (d["vit_priority"] === "Low" && d["vit_age"] > 365) {
             d["Sla"] = true;
           }
         });
@@ -173,7 +193,7 @@ export default {
               });
           } else if (filterCol.type == "range") {
             let rangeVals = data.map(x => parseFloat(x[filterCol.key]));
-            if (filterCol.key === "CVSS Score") {
+            if (filterCol.key === "vit_u_cvss_score") {
               fOptions = [0.0, 10.0];
             } else {
               fOptions = [Math.min(...rangeVals), Math.max(...rangeVals)];

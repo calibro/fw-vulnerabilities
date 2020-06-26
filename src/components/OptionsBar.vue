@@ -49,7 +49,10 @@
       </b-col>
       <b-col sm="1" class="align-self-start d-flex flex-column">
         <label class="fw-option-select-label">Description</label>
-        <b-form-checkbox :checked="showDescriptionNote" @change="setShowDescriptionNote" class="mt-2"
+        <b-form-checkbox
+          :checked="showDescriptionNote"
+          @change="setShowDescriptionNote"
+          class="mt-2"
           >Show</b-form-checkbox
         >
       </b-col>
@@ -69,14 +72,25 @@ export default {
   data() {
     return {
       groupOptions: [
-        { value: "State", text: "State" },
-        { value: "Close Code", text: "Close code" },
-        { value: "Team Aziendale", text: "Team Aziendale" }
+        { value: "vit_state", text: "State" },
+        { value: "vit_u_close_code", text: "Close code" },
+        { value: "usr_u_business_unit", text: "Team Aziendale" }
       ],
       colorOptions: [
-        { value: "Priority", text: "Priority" },
-        { value: "Age", text: "Age" },
-        { value: "Fattore di esposizione", text: "Fattore di esposizione" }
+        { value: "vit_priority", text: "Priority" },
+        { value: "vit_age", text: "Age" },
+        {
+          value: "dmp_u_fatturato_esposizione_residuo",
+          text: "Fattore di esposizione"
+        },
+        {
+          value: "sir_u_remediation_cost",
+          text: "Remediation Cost"
+        },
+        {
+          value: "sir_u_workaround_cost",
+          text: "Workaround Cost"
+        }
       ],
       sortOptions: [
         { value: "Count", text: "Count" },
@@ -85,7 +99,14 @@ export default {
     };
   },
   computed: {
-    ...mapState(["groupBy", "colorBy", "sortBy", "dotSize", "showSLA", "showDescriptionNote"])
+    ...mapState([
+      "groupBy",
+      "colorBy",
+      "sortBy",
+      "dotSize",
+      "showSLA",
+      "showDescriptionNote"
+    ])
   },
   methods: {
     ...mapMutations([
