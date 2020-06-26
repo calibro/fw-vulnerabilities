@@ -1,0 +1,35 @@
+[
+  {
+    "text": "Default",
+    "value": "default"
+  },
+  {
+    "text": "Preset 1",
+    "value": {
+      "viewOptions": {
+        "groupBy": "vit_state | vit_u_close_code | usr_u_business_unit",
+        "sortBy": "Count | Alphabetically",
+        "colorBy": "vit_priority | vit_age | sir_u_remediation_cost | sir_u_workaround_cost | dmp_u_fatturato_esposizione_residuo",
+        "showSLA": true
+      },
+      "filtersOptions": {
+        "vit_u_real_target": ["foo", "bar"],
+        "vit_u_cvss_score": [0.0, 10],
+        "vit_priority": ["Low", "Medium", "High"],
+        "vit_state": ["In Review", "Remediation", "Closed"],
+        "vit_u_close_code": [
+          "N/A",
+          "Fixed",
+          "Not fixed",
+          "False positive",
+          "Not fixable"
+        ],
+        "usr_u_business_unit": ["foo", "bar"],
+        "vit_u_year": ["2018", "foo", "bar"],
+        "dmp_u_esposizione": ["Internet", "Intranet", "NA"],
+        "vit_source": ["foo", "bar"],
+        "vit_u_handler": ["foo", "bar"]
+      }
+    }
+  }
+]
