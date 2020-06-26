@@ -1,5 +1,5 @@
 {
-  "name": "fw-vulnerabilities",
+  "name": "vulnerabilities",
   "version": "0.1.0",
   "private": true,
   "description": "Visualize data related to vulnerabilities",
