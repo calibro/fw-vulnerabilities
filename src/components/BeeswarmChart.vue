@@ -28,7 +28,7 @@ export default {
       sortBy: state => state.sortBy,
       dotSize: state => state.dotSize,
       showSLA: state => state.showSLA,
-      showDescriptionNote:  state => state.showDescriptionNote,
+      showDescriptionNote: state => state.showDescriptionNote,
       csvData: state => state.data.csvData
     }),
     ...mapGetters({
@@ -594,9 +594,9 @@ export default {
           .attr("id", "annotation-" + item.dataId)
           .call(makeAnnotations);
 
-        this.setAnnotationSyle(annotation)
-        makeAnnotations.element = annotation
-        
+        this.setAnnotationSyle(annotation);
+        makeAnnotations.element = annotation;
+
         d3.select(node)
           .selectAll("circle")
           .attr("stroke", "black");
@@ -604,59 +604,57 @@ export default {
         this.annotations.push(makeAnnotations);
       }
     },
-    updateAnnotationText () {
-      let self = this
+    updateAnnotationText() {
+      let self = this;
       this.annotations.forEach(annotation => {
         annotation.annotations().forEach(d => {
-          d.note.label = self.getAnnotationText(d.data)
-        })
-        annotation.updateText()
-        this.setAnnotationSyle(annotation.element)
-      })
+          d.note.label = self.getAnnotationText(d.data);
+        });
+        annotation.updateText();
+        this.setAnnotationSyle(annotation.element);
+      });
     },
     setAnnotationSyle(annotation) {
       annotation
-          .select(".annotation-note-bg")
-          .attr("fill-opacity", 0.85)
-          .attr("fill", "black")
-          .attr("stroke", "white")
-          .attr("rx", 10)
-          .attr("ry", 10);
+        .select(".annotation-note-bg")
+        .attr("fill-opacity", 0.85)
+        .attr("fill", "black")
+        .attr("stroke", "white")
+        .attr("rx", 10)
+        .attr("ry", 10);
 
-        annotation
-          .selectAll("text")
-          .attr("font-family", "Arial, sans-serif")
-          .attr("fill", "white");
+      annotation
+        .selectAll("text")
+        .attr("font-family", "Arial, sans-serif")
+        .attr("fill", "white");
 
-        annotation
-          .select(".annotation-note-title")
-          .style("cursor", "pointer")
-          .style("text-decoration", "underline")
-          .on("click", d => {
-            const baseUrl =
-              "https://fastweb.service-now.com/nav_to.do?uri=%2Fsn_vul_vulnerable_item.do%3Fsys_id%3D";
-            window.open(baseUrl + item["sys_id"]);
-          });
+      annotation
+        .select(".annotation-note-title")
+        .style("cursor", "pointer")
+        .style("text-decoration", "underline")
+        .on("click", d => {
+          const baseUrl =
+            "https://fastweb.service-now.com/nav_to.do?uri=%2Fsn_vul_vulnerable_item.do%3Fsys_id%3D";
+          window.open(baseUrl + item["sys_id"]);
+        });
 
-        annotation
-          .selectAll(".handle")
-          .attr("stroke-opacity", 0)
-          .attr("fill-opacity", 0);
+      annotation
+        .selectAll(".handle")
+        .attr("stroke-opacity", 0)
+        .attr("fill-opacity", 0);
 
-        // remove target handle
-        annotation.selectAll(".annotation-subject .handle").remove();
+      // remove target handle
+      annotation.selectAll(".annotation-subject .handle").remove();
     },
     getAnnotationText(item) {
-      let note = item["Code"] +
-              " | " +
-              item["Substate"]
+      let note = `${item["Code"]}${
+        item["Substate"] ? " | " + item["Substate"] : ""
+      }`;
 
       if (this.showDescriptionNote) {
-        note +=
-              " | " +
-              item["Vulnerability description"]
+        note += " | " + item["Vulnerability description"];
       }
-      return note
+      return note;
     }
   },
   watch: {
@@ -681,8 +679,8 @@ export default {
     showSLA() {
       this.draw(0.1, false);
     },
-    showDescriptionNote () {
-      this.updateAnnotationText()
+    showDescriptionNote() {
+      this.updateAnnotationText();
     }
   }
 };
