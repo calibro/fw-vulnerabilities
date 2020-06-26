@@ -47,7 +47,7 @@ const filterCols = [
   },
   {
     key: "Remediation supervisor",
-    type: "checkbox"
+    type: "group-list"
   }
 ];
 
@@ -207,9 +207,9 @@ export default {
     },
     setFilterPreset(state, values) {
       Object.keys(values).forEach(key => {
-        Vue.set(state.filters, key, values[key])
-      })
-    },
+        Vue.set(state.filters, key, values[key]);
+      });
+    }
   },
   actions: {
     async loadTestData({ state, commit }) {

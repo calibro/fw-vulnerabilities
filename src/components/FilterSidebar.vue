@@ -276,10 +276,10 @@
             role="tabpanel"
           >
             <div class="filter-body">
-              <checkbox-filter
+              <group-list-filter
                 filterKey="Remediation supervisor"
                 @change="onChangeFilter"
-              ></checkbox-filter>
+              ></group-list-filter>
             </div>
           </b-collapse>
         </div>
