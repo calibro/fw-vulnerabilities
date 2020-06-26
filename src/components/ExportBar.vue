@@ -42,7 +42,7 @@
       </b-col>
       <b-col>
         <fw-select
-          label="Presets"
+          label="Load Presets"
           value="default"
           @change="changePreset"
           :options="presetOptionsList"
