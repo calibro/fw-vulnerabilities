@@ -42,7 +42,8 @@
       </b-col>
       <b-col>
         <fw-select
-          label="Filter preset"
+          label="Presets"
+          value="default"
           @change="changePreset"
           :options="presetOptionsList"
         ></fw-select>
@@ -77,12 +78,28 @@ export default {
     ...mapState(["slideTitle", "slideSource", "slideSize", "presetOptionsList"])
   },
   methods: {
-    ...mapMutations(["setslideTitle", "setSlideSource", "setSlideSize", "setViewPreset", "data/setFilterPreset"]),
+    ...mapMutations([
+      "setslideTitle",
+      "setSlideSource",
+      "setSlideSize",
+      "setViewPreset",
+      "data/setFilterPreset",
+      "data/resetFilters"
+    ]),
 
     changePreset(val) {
-      if (val) {
-        this["setViewPreset"](val.viewOptions)
-        this["data/setFilterPreset"](val.filtersOptions)
+      if (val != "default") {
+        this["setViewPreset"](val.viewOptions);
+        this["data/setFilterPreset"](val.filtersOptions);
+      } else {
+        const defaultOptions = {
+          groupBy: "State",
+          sortBy: "Count",
+          colorBy: "Priority",
+          showSLA: false
+        };
+        this["setViewPreset"](defaultOptions);
+        this["data/resetFilters"]();
       }
     },
     onExport(format, title) {
